@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CMD.Data.Context;
 using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace CMD.Data.Repostories
 {
@@ -21,7 +22,14 @@ namespace CMD.Data.Repostories
         public async Task EditDoctor(Doctor doctor)
         {
             db.Doctors.Update(doctor);
-            db.SaveChangesAsync();
+            await db.SaveChangesAsync();
+        }
+
+        public async Task<Doctor> GetDoctorById(int id)
+        {
+            return await db.Doctors
+                .Include(d=>d.DoctorAddress)
+                .FirstOrDefaultAsync(d=>d.DoctorId==id);
         }
     }
 }

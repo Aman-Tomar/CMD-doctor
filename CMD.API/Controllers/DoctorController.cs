@@ -39,15 +39,7 @@ namespace CMD.API.Controllers
             {
                 return NotFound();
             }
-            byte[]? imageBytes = null;
-            if (doctor.ProfilePicture != null && doctor.ProfilePicture.Length > 0)
-            {
-                using (var ms = new MemoryStream())
-                {
-                    await doctor.ProfilePicture.CopyToAsync(ms);
-                    imageBytes = ms.ToArray();
-                }
-            }
+           
             // mapping the DTO
             doc.FirstName = doctor.FirstName;
             doc.LastName = doctor.LastName;
@@ -60,15 +52,16 @@ namespace CMD.API.Controllers
             doc.Specialization = doctor.Specialization;
             doc.Qualification = doctor.Qualification;
             doc.ExperienceInYears = doctor.ExperienceInYears;
-            doc.LastModifiedBy = User.Identity?.Name;
-            doc.ProfilePicture = imageBytes;
+            doc.LastModifiedBy = "admin";// User.Identity?.Name;
+          //  doc.ProfilePicture = doctor.ProfilePicture; 
             doc.DoctorAddress.Street = doctor.Address;
             doc.DoctorAddress.City = doctor.City;
             doc.DoctorAddress.State = doctor.State;
             doc.DoctorAddress.Country = doctor.Country;
             doc.DoctorAddress.ZipCode = doctor.ZipCode;
-            doc.DoctorAddress.LastModifiedBy = User.Identity?.Name;
-            doc.DoctorAddress.LastModifiedDate = DateTime.Now;             
+            doc.DoctorAddress.LastModifiedBy = "admin";//User.Identity?.Name;
+            doc.DoctorAddress.LastModifiedDate = DateTime.Now; 
+            await repo.EditDoctor(doc);
             return Ok(doc);
         }
 

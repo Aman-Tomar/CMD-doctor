@@ -19,6 +19,6 @@
         public string Specialization { get; set; }
         public string? Qualification { get; set; }
         public int ExperienceInYears { get; set; }
-        public IFormFile? ProfilePicture { get; set; }
+        //public byte[]? ProfilePicture { get; set; }
     }
 }
