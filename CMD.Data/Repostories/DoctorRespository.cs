@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CMD.Data.Context;
 using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace CMD.Data.Repostories
 {
@@ -19,7 +20,9 @@ namespace CMD.Data.Repostories
         }
         public async Task<Doctor> GetDoctorById(int id)
         {
-            return await db.Doctors.FindAsync(id);
+            return await db.Doctors
+                .Include(d=>d.DoctorAddress)
+                .FirstOrDefaultAsync(d=>d.DoctorId == id);
         }
     }
 }
