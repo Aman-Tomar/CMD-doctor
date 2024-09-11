@@ -9,6 +9,7 @@ namespace CMD.Domain.Repositories
 {
     public interface IDoctorRepository
     {
+        Task EditDoctor(Doctor doctor);
         Task<Doctor> GetDoctorById(int id);
     }
 }

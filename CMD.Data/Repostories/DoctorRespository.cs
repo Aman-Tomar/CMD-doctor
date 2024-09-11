@@ -17,9 +17,11 @@ namespace CMD.Data.Repostories
         {
             this.db = db;
         }
-        public async Task<Doctor> GetDoctorById(int id)
+
+        public async Task EditDoctor(Doctor doctor)
         {
-            return await  db.Doctors.FindAsync(id);
+            db.Doctors.Update(doctor);
+            db.SaveChangesAsync();
         }
     }
 }
