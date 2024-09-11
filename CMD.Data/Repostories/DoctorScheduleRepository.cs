@@ -67,6 +67,16 @@ namespace CMD.Data.Repostories
         {
             _context.DoctorSchedules.Update(doctorSchedule);
             await _context.SaveChangesAsync();
+        /// Retrieves a list of schedules associated with a specific doctor based on the provided doctor ID.
+        /// </summary>
+        /// <param name="doctorId">The unique identifier of the doctor whose schedules are to be retrieved.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains a list of <see cref="DoctorSchedule"/> 
+        /// objects associated with the doctor. If no schedules are found, the result will be an empty list.
+        /// </returns>
+        public async Task<List<DoctorSchedule>> GetScheduleByDoctorId(int doctorId)
+        {
+            return await _context.DoctorSchedules.Where( s => s.DoctorId == doctorId).ToListAsync();
         }
     }
 }

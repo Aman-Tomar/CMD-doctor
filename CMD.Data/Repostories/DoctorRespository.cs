@@ -12,7 +12,6 @@ namespace CMD.Data.Repostories
     public class DoctorRespository : IDoctorRepository
     {
         private readonly DoctorDbContext _context;
-
         public DoctorRespository(DoctorDbContext context)
         {
             this._context = context;
