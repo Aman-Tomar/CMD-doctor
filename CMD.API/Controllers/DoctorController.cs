@@ -26,13 +26,29 @@ namespace CMD.API.Controllers
         // PUT ../api/Doctor/Edit - FE002, FE005, FE006
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> EditDoctor(int id, Doctor doctor)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> EditDoctor([FromQuery]int id,[FromBody] Doctor doctor)
         {
             if(!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            Doctor doc = await 
+            var doc = await repo.GetDoctorById(id);
+            if (doc == null)
+            {
+                return NotFound();
+            }
+            byte[]? imageBytes = null;
+
+            if (doctor.ProfilePicture != null && doctor.ProfilePicture.Length > 0)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await doctor.ProfilePicture.CopyToAsync(ms);
+                    imageBytes = ms.ToArray();
+                }
+            }
             return Ok();
         }
 
