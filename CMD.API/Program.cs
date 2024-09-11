@@ -1,6 +1,8 @@
 
 using System.Text;
 using CMD.Data.Context;
+using CMD.Data.Repostories;
+using CMD.Domain.Repositories;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -49,6 +51,7 @@ namespace CMD.API
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            builder.Services.AddTransient<IDoctorRepository,DoctorRespository>();
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
