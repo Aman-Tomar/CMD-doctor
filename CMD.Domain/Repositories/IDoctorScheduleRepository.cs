@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CMD.Domain.Entities;
+using CMD.Domain.Entities;
 
 namespace CMD.Domain.Repositories
 {
@@ -25,5 +26,7 @@ namespace CMD.Domain.Repositories
         /// <see cref="DoctorSchedule"/> entities matching the specified doctor ID and weekday.
         /// </returns>
         Task<List<DoctorSchedule>> GetDoctorScheduleForWeekday(int doctorId, string weekday);
+        Task UpdateDoctorSchedule(DoctorSchedule doctorSchedule);
+        Task<DoctorSchedule> GetDoctorScheduleById(int doctorScheduleId);
     }
 }
