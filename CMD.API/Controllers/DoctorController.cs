@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using CMD.Domain.Entities;
+using CMD.Domain.Repositories;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CMD.API.Controllers
@@ -7,6 +9,12 @@ namespace CMD.API.Controllers
     [ApiController]
     public class DoctorController : ControllerBase
     {
+        private readonly IDoctorRepository repo;
+
+        public DoctorController(IDoctorRepository repo)
+        {
+            this.repo = repo;
+        }
         // POST ../api/Doctor/Add - FE001
         [HttpPost]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -34,9 +42,15 @@ namespace CMD.API.Controllers
         // GET ../api/Doctor/id - FE003
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetDoctorById()
+
+        public async Task<IActionResult> GetDoctorById(int id)
         {
-            return Ok();
+            Doctor doctor = await repo.GetDoctorById(id);
+            if(doctor == null)
+            {
+                return NotFound();
+            }
+            return Ok(doctor);
         }
     }
 }
