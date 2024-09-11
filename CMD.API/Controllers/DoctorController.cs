@@ -1,6 +1,8 @@
-﻿using CMD.Domain.Entities;
+﻿using CMD.API.DTO;
+using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CMD.API.Controllers
@@ -10,7 +12,6 @@ namespace CMD.API.Controllers
     public class DoctorController : ControllerBase
     {
         private readonly IDoctorRepository repo;
-
         public DoctorController(IDoctorRepository repo)
         {
             this.repo = repo;
@@ -23,12 +24,11 @@ namespace CMD.API.Controllers
             return Ok();
         }
 
-        // PUT ../api/Doctor/Edit - FE002, FE005, FE006
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> EditDoctor([FromQuery]int id,[FromBody] Doctor doctor)
+        public async Task<IActionResult> EditDoctor([FromQuery]int id,[FromBody] EditDto doctor)
         {
             if(!ModelState.IsValid)
             {
@@ -40,7 +40,6 @@ namespace CMD.API.Controllers
                 return NotFound();
             }
             byte[]? imageBytes = null;
-
             if (doctor.ProfilePicture != null && doctor.ProfilePicture.Length > 0)
             {
                 using (var ms = new MemoryStream())
@@ -49,7 +48,28 @@ namespace CMD.API.Controllers
                     imageBytes = ms.ToArray();
                 }
             }
-            return Ok();
+            // mapping the DTO
+            doc.FirstName = doctor.FirstName;
+            doc.LastName = doctor.LastName;
+            doc.BriefDescription = doctor.Biography;
+            doc.DateOfBirth = doctor.DOB;
+            doc.Email = doctor.Email;
+            doc.Gender = doctor.Gender;
+            doc.PhoneNo = doctor.Phone;
+            doc.Status = doctor.IsActive;
+            doc.Specialization = doctor.Specialization;
+            doc.Qualification = doctor.Qualification;
+            doc.ExperienceInYears = doctor.ExperienceInYears;
+            doc.LastModifiedBy = User.Identity?.Name;
+            doc.ProfilePicture = imageBytes;
+            doc.DoctorAddress.Street = doctor.Address;
+            doc.DoctorAddress.City = doctor.City;
+            doc.DoctorAddress.State = doctor.State;
+            doc.DoctorAddress.Country = doctor.Country;
+            doc.DoctorAddress.ZipCode = doctor.ZipCode;
+            doc.DoctorAddress.LastModifiedBy = User.Identity?.Name;
+            doc.DoctorAddress.LastModifiedDate = DateTime.Now;             
+            return Ok(doc);
         }
 
         // GET ../api/Doctor - FE004
