@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace CMD.Domain.Entities
@@ -27,6 +28,7 @@ namespace CMD.Domain.Entities
         public string LastModifiedBy { get; set; }
         [ForeignKey("Doctor")]
         public int DoctorId { get; set; }
+        [JsonIgnore]
         public Doctor Doctor { get; set; }
     }
 }

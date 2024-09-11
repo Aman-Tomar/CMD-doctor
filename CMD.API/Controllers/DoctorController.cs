@@ -21,24 +21,12 @@ namespace CMD.API.Controllers
         [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddDoctor(AddDoctorDto doctor)
+        public async Task<IActionResult> AddDoctor([FromBody]AddDoctorDto doctor)
         {
             if(!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-
-            byte[]? imageBytes = null;
-
-            if (doctor.ProfilePicture != null && doctor.ProfilePicture.Length > 0)
-            {
-                using (var ms = new MemoryStream())
-                {
-                    await doctor.ProfilePicture.CopyToAsync(ms);
-                    imageBytes = ms.ToArray();
-                }
-            }
-
             Doctor doc = new Doctor
             {
                 FirstName = doctor.FirstName,
@@ -52,20 +40,25 @@ namespace CMD.API.Controllers
                 Specialization = doctor.Specialization,
                 PhoneNo = doctor.Phone,
                 CreatedAt = DateTime.Now,
-                CreatedBy = User.Identity?.Name,
-                LastModifiedBy = User.Identity?.Name,
-                ProfilePicture = imageBytes,
+                CreatedBy = "admin",//User.Identity?.Name,
+                LastModifiedBy = "admin",//User.Identity?.Name,
+                //ProfilePicture = imageBytes,
                 Status = doctor.Status,
-                DoctorAddress  = new DoctorAddress
+                DoctorAddress = new DoctorAddress
                 {
-                    State = doctor.Address,
+                    Street = doctor.Address,
                     City = doctor.City,
                     LastModifiedDate = DateTime.Now,
                     Country = doctor.Country,
-                    ZipCode = doctor.ZipCode
+                    ZipCode = doctor.ZipCode,
+                    CreatedBy = "admin",
+                    LastModifiedBy = "admin",
+                    CreatedDate = DateTime.Now,
+                    State = doctor.State
+
                 }
             };
-            repo.AddDoctorAsync(doc);
+            await repo.AddDoctorAsync(doc);
             return Created($"api/Doctor/add/{doc.DoctorId}",doc);
         }
 
