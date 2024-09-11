@@ -5,10 +5,10 @@ using System.Text;
 using System.Threading.Tasks;
 using CMD.Domain.Entities;
 
-namespace CMD.Domain.Repositories
+namespace CMD.Domain.Services
 {
-    public interface IDoctorRepository
+    public interface IManageDoctorSchedule
     {
-        Task<Doctor> GetDoctorById(int doctorId);
+        Task<bool> IsAvailable(DoctorSchedule doctorSchedule);
     }
 }

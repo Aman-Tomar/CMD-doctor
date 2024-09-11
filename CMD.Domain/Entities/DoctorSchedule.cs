@@ -16,9 +16,9 @@ namespace CMD.Domain.Entities
         [Required(ErrorMessage = "Weeday field is mandatory.")]
         public string Weekday { get; set; }
         [Required(ErrorMessage = "StartTime field is mandatory.")]
-        public DateTime StartTime { get; set; }
+        public TimeOnly StartTime { get; set; }
         [Required(ErrorMessage = "EndTime field is mandatory.")]
-        public DateTime EndTime { get; set; }
+        public TimeOnly EndTime { get; set; }
         [Required(ErrorMessage = "Status field is mandatory.")]
         public bool Status { get; set; }
         [Required(ErrorMessage = "CreatedDate field is mandatory.")]

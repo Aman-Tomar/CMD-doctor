@@ -1,6 +1,6 @@
-﻿using CMD.API.DTO;
-using CMD.Domain.Entities;
+﻿using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
+using CMD.Domain.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -11,10 +11,14 @@ namespace CMD.API.Controllers
     public class DoctorScheduleController : ControllerBase
     {
         private readonly IDoctorScheduleRepository _doctorScheduleRepository;
+        private readonly IDoctorRepository _doctorRepository;
+        private readonly IManageDoctorSchedule _manageDoctorSchedule;
 
-        public DoctorScheduleController(IDoctorScheduleRepository doctorScheduleRepository)
+        public DoctorScheduleController(IDoctorScheduleRepository doctorScheduleRepository, IDoctorRepository doctorRepository, IManageDoctorSchedule manageDoctorSchedule)
         {
             this._doctorScheduleRepository = doctorScheduleRepository;
+            this._doctorRepository = doctorRepository;
+            this._manageDoctorSchedule = manageDoctorSchedule;
         }
 
         /// <summary>
@@ -34,12 +38,36 @@ namespace CMD.API.Controllers
         [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddDoctorSchedule(DoctorSchedule doctorSchedule)
+        public async Task<IActionResult> AddDoctorSchedule([FromQuery] int doctorId, [FromBody] DoctorSchedule doctorSchedule)
         {
             if(!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
+
+            var doctor = await _doctorRepository.GetDoctorById(doctorId);
+            if (doctor == null)
+            {
+                return NotFound("Doctor Not Found");    
+            }
+
+            // Check if startTime is before endTime
+            if (doctorSchedule.StartTime > doctorSchedule.EndTime)
+            {
+                return BadRequest("Enter the schedule time properly.");
+            }
+
+            var isAvailable = await _manageDoctorSchedule.IsAvailable(doctorSchedule);
+            if (!isAvailable)
+            {
+                return BadRequest("Cannot create schedule for time slot because a schedule already exist.");
+            }
+
+            doctorSchedule.CreatedDate = DateTime.Now;
+            doctorSchedule.CreatedBy = "admin";
+            doctorSchedule.LastModifiedDate = DateTime.Now;
+            doctorSchedule.LastModifiedBy = "admin";
+
             try
             {
                 await _doctorScheduleRepository.CreateDoctorSchedule(doctorSchedule);
