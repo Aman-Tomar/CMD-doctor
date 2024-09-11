@@ -11,5 +11,6 @@ namespace CMD.Domain.Repositories
     {
         Task UpdateDoctorSchedule(DoctorSchedule doctorSchedule);
         Task<DoctorSchedule> GetDoctorScheduleById(int doctorScheduleId);
+        Task<List<DoctorSchedule>> GetDoctorScheduleForWeekday(int doctorId, string weekday);
     }
 }

@@ -10,6 +10,10 @@ namespace CMD.Data.Context
 {
     public class DoctorDbContext : DbContext
     {
+        public DoctorDbContext()
+        {
+            
+        }
         public DoctorDbContext(DbContextOptions<DoctorDbContext> options): base(options)
         {
             

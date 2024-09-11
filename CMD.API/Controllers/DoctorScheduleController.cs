@@ -1,6 +1,7 @@
 ﻿using CMD.Data.Repostories;
 using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
+using CMD.Domain.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,11 +13,13 @@ namespace CMD.API.Controllers
     {
         private readonly IDoctorScheduleRepository _doctorScheduleRepository;
         private readonly IDoctorRepository _doctorRepository;
+        private readonly IManageDoctorSchedule _manageDoctorSchedule;
 
-        public DoctorScheduleController(IDoctorScheduleRepository doctorScheduleRepository, IDoctorRepository doctorRepository)
+        public DoctorScheduleController(IDoctorScheduleRepository doctorScheduleRepository, IDoctorRepository doctorRepository, IManageDoctorSchedule manageDoctorSchedule)
         {
             this._doctorScheduleRepository = doctorScheduleRepository;
             this._doctorRepository = doctorRepository;
+            this._manageDoctorSchedule = manageDoctorSchedule;
         }
         // POST ../api/DoctorSchedule/Add - FE007
         [HttpPost]
@@ -75,6 +78,12 @@ namespace CMD.API.Controllers
                 return BadRequest("Please enter schedule time properly.");
             }
 
+            // Check availability
+            var isAvailable = await _manageDoctorSchedule.IsAvailable(doctorSchedule);
+            if (!isAvailable)
+            {
+                return BadRequest("The selected schedule overlaps with existing schedules or is not available.");
+            }
 
             // Mapping
             existingDoctorSchedule.Clinic = doctorSchedule.Clinic;

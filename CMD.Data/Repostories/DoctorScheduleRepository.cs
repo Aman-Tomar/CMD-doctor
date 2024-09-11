@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using CMD.Data.Context;
 using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
+using Microsoft.EntityFrameworkCore;
 
 namespace CMD.Data.Repostories
 {
@@ -17,10 +18,16 @@ namespace CMD.Data.Repostories
         {
             this._context = context;
         }
-
+        
         public async Task<DoctorSchedule> GetDoctorScheduleById(int doctorScheduleId)
         {
             return await _context.DoctorSchedules.FindAsync(doctorScheduleId);
+        }
+
+        public async Task<List<DoctorSchedule>> GetDoctorScheduleForWeekday(int doctorId, string weekday)
+        {
+            return await _context.DoctorSchedules
+                                 .Where(s => s.DoctorId == doctorId && s.Weekday == weekday).ToListAsync();
         }
 
         public async Task UpdateDoctorSchedule(DoctorSchedule doctorSchedule)
