@@ -18,6 +18,9 @@ namespace CMD.API.Models.DTO
         public string Phone { get; set; }
         public bool IsActive { get; set; }
         public bool Status { get; set; }
+        public string Specialization { get; set; }
+        public int ExperienceInYears { get; set; }
+        public string? Qualification { get; set; }
         public IFormFile? ProfilePicture { get; set; }
 
     }
