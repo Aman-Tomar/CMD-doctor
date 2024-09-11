@@ -27,6 +27,18 @@ namespace CMD.API.Controllers
             {
                 return BadRequest(ModelState);
             }
+
+            byte[]? imageBytes = null;
+
+            if (doctor.ProfilePicture != null && doctor.ProfilePicture.Length > 0)
+            {
+                using (var ms = new MemoryStream())
+                {
+                    await doctor.ProfilePicture.CopyToAsync(ms);
+                    imageBytes = ms.ToArray();
+                }
+            }
+
             Doctor doc = new Doctor
             {
                 FirstName = doctor.FirstName,
@@ -35,7 +47,20 @@ namespace CMD.API.Controllers
                 DateOfBirth = doctor.DOB,
                 Email = doctor.Email,
                 Gender = doctor.Gender,
-                PhoneNo = doctor.Phone
+                PhoneNo = doctor.Phone,
+                CreatedAt = DateTime.Now,
+                CreatedBy = User.Identity?.Name,
+                LastModifiedBy = User.Identity?.Name,
+                ProfilePicture = imageBytes,
+                Status = doctor.Status,
+                DoctorAddress  = new DoctorAddress
+                {
+                    State = doctor.Address,
+                    City = doctor.City,
+                    LastModifiedDate = DateTime.Now,
+                    Country = doctor.Country,
+                    ZipCode = doctor.ZipCode
+                }
             };
             repo.AddDoctorAsync(doc);
             return Created($"api/Doctor/add/{doc.DoctorId}",doc);
