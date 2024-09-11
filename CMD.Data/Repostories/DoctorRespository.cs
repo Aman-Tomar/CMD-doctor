@@ -9,5 +9,6 @@ namespace CMD.Data.Repostories
 {
     public class DoctorRespository : IDoctorRepository
     {
+       
     }
 }

@@ -8,5 +8,6 @@ namespace CMD.Domain.Repositories
 {
     public interface IDoctorRepository
     {
+        Task GetDoctorById(int id);
     }
 }
