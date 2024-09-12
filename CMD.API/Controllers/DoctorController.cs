@@ -1,6 +1,8 @@
-﻿
-using CMD.Data.Repostories;
+﻿using CMD.API.DTO;
+using CMD.Domain.Entities;
+using CMD.Domain.Repositories;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using CMD.Domain.DTO;
 using CMD.Domain.Repositories;
@@ -11,10 +13,10 @@ namespace CMD.API.Controllers
     [ApiController]
     public class DoctorController : ControllerBase
     {
-        private readonly IDoctorRepository _repo;
+        private readonly IDoctorRepository repo;
         public DoctorController(IDoctorRepository repo)
         {
-            _repo = repo;
+            this.repo = repo;
         }
         // POST ../api/Doctor/Add - FE001
         [HttpPost]
@@ -24,12 +26,45 @@ namespace CMD.API.Controllers
             return Ok();
         }
 
-        // PUT ../api/Doctor/Edit - FE002, FE005, FE006
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> EditDoctor()
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> EditDoctor([FromQuery]int id,[FromBody] EditDto doctor)
         {
-            return Ok();
+            if(!ModelState.IsValid)
+            {
+                return BadRequest();
+            }
+            var doc = await repo.GetDoctorById(id);
+            if (doc == null)
+            {
+                return NotFound();
+            }
+           
+            // mapping the DTO
+            doc.FirstName = doctor.FirstName;
+            doc.LastName = doctor.LastName;
+            doc.BriefDescription = doctor.Biography;
+            doc.DateOfBirth = doctor.DOB;
+            doc.Email = doctor.Email;
+            doc.Gender = doctor.Gender;
+            doc.PhoneNo = doctor.Phone;
+            doc.Status = doctor.IsActive;
+            doc.Specialization = doctor.Specialization;
+            doc.Qualification = doctor.Qualification;
+            doc.ExperienceInYears = doctor.ExperienceInYears;
+            doc.LastModifiedBy = "admin";// User.Identity?.Name;
+          //  doc.ProfilePicture = doctor.ProfilePicture; 
+            doc.DoctorAddress.Street = doctor.Address;
+            doc.DoctorAddress.City = doctor.City;
+            doc.DoctorAddress.State = doctor.State;
+            doc.DoctorAddress.Country = doctor.Country;
+            doc.DoctorAddress.ZipCode = doctor.ZipCode;
+            doc.DoctorAddress.LastModifiedBy = "admin";//User.Identity?.Name;
+            doc.DoctorAddress.LastModifiedDate = DateTime.Now; 
+            await repo.EditDoctor(doc);
+            return Ok(doc);
         }
 
         // GET ../api/Doctor - FE004
@@ -76,7 +111,7 @@ namespace CMD.API.Controllers
         // GET ../api/Doctor/id - FE003
         [HttpGet("{id:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetDoctorById()
+        public async Task<IActionResult> GetDoctorById(int id)
         {
             return Ok();
         }

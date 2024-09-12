@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace CMD.Domain.Entities
@@ -19,6 +20,7 @@ namespace CMD.Domain.Entities
         public DateTime LastModifiedDate { get; set; }
         public string LastModifiedBy { get; set; }
         public int DoctorId { get; set; }
+        [JsonIgnore]
         public Doctor Doctor { get; set; }
     }
 }

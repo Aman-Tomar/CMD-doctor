@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CMD.Domain.Entities;
+using CMD.Domain.Entities;
 
 namespace CMD.Domain.Repositories
 {
@@ -16,5 +17,7 @@ namespace CMD.Domain.Repositories
     {
         Task<List<DoctorDto>> GetAllDoctorsAsync(int pageNumber,int pageSize);
         Task<int> GetTotalNumberOfDoctorsAsync();
+        Task EditDoctor(Doctor doctor);
+        Task<Doctor> GetDoctorById(int id);
     }
 }

@@ -7,6 +7,8 @@ using CMD.Data.Context;
 using CMD.Domain.Entities;
 using CMD.Data.Context;
 using CMD.Domain.Entities;
+using CMD.Data.Context;
+using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 using CMD.Domain.DTO;
@@ -43,6 +45,18 @@ namespace CMD.Data.Repostories
         public async Task<int> GetTotalNumberOfDoctorsAsync()
         {
             return await _context.Doctors.CountAsync();
+        }
+        public async Task EditDoctor(Doctor doctor)
+        {
+            db.Doctors.Update(doctor);
+            await db.SaveChangesAsync();
+        }
+
+        public async Task<Doctor> GetDoctorById(int id)
+        {
+            return await db.Doctors
+                .Include(d=>d.DoctorAddress)
+                .FirstOrDefaultAsync(d=>d.DoctorId==id);
         }
     }
 }
