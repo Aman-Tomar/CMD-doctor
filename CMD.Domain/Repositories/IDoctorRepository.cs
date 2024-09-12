@@ -14,6 +14,7 @@ namespace CMD.Domain.Repositories
     /// </summary>
     public interface IDoctorRepository
     {
-        Task<Doctor> GetDoctorById(int doctorId);
+        Task<List<DoctorDto>> GetAllDoctorsAsync(int pageNumber,int pageSize);
+        Task<int> GetTotalNumberOfDoctorsAsync();
     }
 }
