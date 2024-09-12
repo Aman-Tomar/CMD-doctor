@@ -1,4 +1,4 @@
-﻿using CMD.API.DTO;
+using CMD.API.DTO;
 using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -151,7 +151,12 @@ namespace CMD.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         public async Task<IActionResult> GetDoctorById(int id)
         {
-            return Ok();
+            Doctor doctor = await repo.GetDoctorById(id);
+            if(doctor == null)
+            {
+                return NotFound();
+            }
+            return Ok(doctor);
         }
     }
     
