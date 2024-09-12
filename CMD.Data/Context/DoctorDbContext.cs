@@ -8,6 +8,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CMD.Data.Context
 {
+    /// <summary>
+    /// Represents the database context for the Doctor domain.
+    /// Provides access to the doctor-related entities and manages the mapping between entities and database tables.
+    /// </summary>
     public class DoctorDbContext : DbContext
     {
         public DoctorDbContext()

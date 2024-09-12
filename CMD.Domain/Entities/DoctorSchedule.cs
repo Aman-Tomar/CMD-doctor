@@ -10,6 +10,7 @@ namespace CMD.Domain.Entities
     public class DoctorSchedule
     {
         [Key]
+        [Required]
         public int DoctorScheduleId { get; set; }
         [StringLength(300, ErrorMessage = "The length must be less than 300 characters.")]
         public string? Clinic { get; set; }

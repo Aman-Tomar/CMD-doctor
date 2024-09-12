@@ -5,18 +5,14 @@ using System.Text;
 using System.Threading.Tasks;
 using CMD.Data.Context;
 using CMD.Domain.Entities;
-using CMD.Data.Context;
-using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore;
 
-namespace CMD.Data.Repostories
+namespace CMD.Data.Repositories
 {
     /// <summary>
     /// Repository class for managing doctor schedules in the database.
-    /// Implements the <see cref="IDoctorScheduleRepository"/> interface for 
-    /// handling CRUD operations related to doctor schedules.
+    /// Implements the <see cref="IDoctorScheduleRepository"/> interface for handling CRUD operations related to doctor schedules.
     /// </summary>
     public class DoctorScheduleRepository : IDoctorScheduleRepository
     {
@@ -32,7 +28,7 @@ namespace CMD.Data.Repostories
         }
 
         /// <summary>
-        /// Adds a new doctor schedule to the database and saves the changes.
+        /// Asynchronously adds a new doctor schedule to the database and saves the changes.
         /// </summary>
         /// <param name="doctorSchedule">The <see cref="DoctorSchedule"/> entity to be added to the database, containing the schedule details.</param>
         /// <returns>
@@ -45,7 +41,7 @@ namespace CMD.Data.Repostories
         }
 
         /// <summary>
-        /// Retrieves doctor schedules for a specific doctor on a given weekday.
+        /// Asynchronously retrieves doctor schedules for a specific doctor on a given weekday.
         /// </summary>
         /// <param name="doctorId">The unique identifier of the doctor whose schedule is being retrieved.</param>
         /// <param name="weekday">The specific weekday (e.g., "Monday") for which the schedule is required.</param>
@@ -55,28 +51,47 @@ namespace CMD.Data.Repostories
         public async Task<List<DoctorSchedule>> GetDoctorScheduleForWeekday(int doctorId, string weekday)
         {
             return await _context.DoctorSchedules
-                                 .Where(s => s.DoctorId == doctorId && s.Weekday == weekday).ToListAsync();
+                                 .Where(s => s.DoctorId == doctorId && s.Weekday == weekday)
+                                 .ToListAsync();
         }
-        
+
+        /// <summary>
+        /// Asynchronously retrieves a doctor schedule by its unique identifier.
+        /// </summary>
+        /// <param name="doctorScheduleId">The unique identifier of the doctor schedule.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation, returning the <see cref="DoctorSchedule"/> entity if found; otherwise, null.
+        /// </returns>
         public async Task<DoctorSchedule> GetDoctorScheduleById(int doctorScheduleId)
         {
             return await _context.DoctorSchedules.FindAsync(doctorScheduleId);
         }
 
+        /// <summary>
+        /// Asynchronously updates an existing doctor schedule in the database.
+        /// </summary>
+        /// <param name="doctorSchedule">The <see cref="DoctorSchedule"/> entity containing updated details.</param>
+        /// <returns>
+        /// A task representing the asynchronous operation of updating the doctor schedule.
+        /// </returns>
         public async Task UpdateDoctorSchedule(DoctorSchedule doctorSchedule)
         {
             _context.DoctorSchedules.Update(doctorSchedule);
             await _context.SaveChangesAsync();
-        /// Retrieves a list of schedules associated with a specific doctor based on the provided doctor ID.
+        }
+
+        /// <summary>
+        /// Asynchronously retrieves a list of schedules associated with a specific doctor based on the provided doctor ID.
         /// </summary>
         /// <param name="doctorId">The unique identifier of the doctor whose schedules are to be retrieved.</param>
         /// <returns>
-        /// A task that represents the asynchronous operation. The task result contains a list of <see cref="DoctorSchedule"/> 
-        /// objects associated with the doctor. If no schedules are found, the result will be an empty list.
+        /// A task that represents the asynchronous operation. The task result contains a list of <see cref="DoctorSchedule"/> objects associated with the doctor.
         /// </returns>
         public async Task<List<DoctorSchedule>> GetScheduleByDoctorId(int doctorId)
         {
-            return await _context.DoctorSchedules.Where( s => s.DoctorId == doctorId).ToListAsync();
+            return await _context.DoctorSchedules
+                                 .Where(s => s.DoctorId == doctorId)
+                                 .ToListAsync();
         }
     }
 }

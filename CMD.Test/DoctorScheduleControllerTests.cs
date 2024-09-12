@@ -100,5 +100,46 @@ namespace CMD.Test
             Assert.AreEqual(StatusCodes.Status400BadRequest, badRequestResult.StatusCode);
             Assert.AreEqual("Cannot create schedule for time slot because a schedule already exist.", badRequestResult.Value);
         }
+
+        [TestMethod]
+        public async Task EditDoctorSchedule_DoctorScheduleNotFound_ReturnsNotFound()
+        {
+            _mockDoctorScheduleRepository.Setup(repo => repo.GetDoctorScheduleById(It.IsAny<int>())).ReturnsAsync((DoctorSchedule)null);
+
+            var result = await _controller.EditDoctorSchedule(1, new DoctorSchedule());
+
+            var notFoundResult = result as NotFoundResult;
+            Assert.IsNotNull(notFoundResult);
+            Assert.AreEqual(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
+        }
+
+        [TestMethod]
+        public async Task EditDoctorSchedule_SuccessfulEdit_ReturnsOk()
+        {
+            _mockDoctorScheduleRepository.Setup(repo => repo.GetDoctorScheduleById(It.IsAny<int>())).ReturnsAsync(new DoctorSchedule());
+            _mockDoctorRepository.Setup(repo => repo.GetDoctorById(It.IsAny<int>())).ReturnsAsync(new Doctor());
+            _mockManageDoctorSchedule.Setup(service => service.IsAvailable(It.IsAny<DoctorSchedule>())).ReturnsAsync(true);
+
+            var result = await _controller.EditDoctorSchedule(1, new DoctorSchedule());
+            var okResult = result as OkResult;
+            Assert.IsNotNull(okResult);
+            Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
+        }
+
+        [TestMethod]
+        public async Task GetDoctorSchedule_Success_ReturnsOk()
+        {
+            _mockDoctorRepository.Setup(repo => repo.GetDoctorById(It.IsAny<int>())).ReturnsAsync(new Doctor());
+            _mockDoctorScheduleRepository.Setup(repo => repo.GetScheduleByDoctorId(It.IsAny<int>())).ReturnsAsync(new List<DoctorSchedule>
+        {
+            new DoctorSchedule { StartTime = TimeOnly.FromDateTime(DateTime.Now), EndTime = TimeOnly.FromDateTime(DateTime.Now.AddHours(1)) }
+        });
+
+            var result = await _controller.GetDoctorSchedule(1);
+
+            var okResult = result as OkObjectResult;
+            Assert.IsNotNull(okResult);
+            Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
+        }
     }
 }
