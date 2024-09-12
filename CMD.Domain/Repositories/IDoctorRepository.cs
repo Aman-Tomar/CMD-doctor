@@ -19,5 +19,6 @@ namespace CMD.Domain.Repositories
         Task<int> GetTotalNumberOfDoctorsAsync();
         Task EditDoctor(Doctor doctor);
         Task<Doctor> GetDoctorById(int id);
+        Task AddDoctorAsync(Doctor doctor);
     }
 }

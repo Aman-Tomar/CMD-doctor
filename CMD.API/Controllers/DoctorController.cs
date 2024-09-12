@@ -18,12 +18,50 @@ namespace CMD.API.Controllers
         {
             this.repo = repo;
         }
-        // POST ../api/Doctor/Add - FE001
+        // POST ../api/Doctor/Add
         [HttpPost]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> AddDoctor()
+        [Consumes("application/json")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<IActionResult> AddDoctor([FromBody]AddDoctorDto doctor)
         {
-            return Ok();
+            if(!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+            Doctor doc = new Doctor
+            {
+                FirstName = doctor.FirstName,
+                LastName = doctor.LastName,
+                BriefDescription = doctor.Biography,
+                DateOfBirth = doctor.DOB,
+                Email = doctor.Email,
+                Gender = doctor.Gender,
+                Qualification = doctor.Qualification,
+                ExperienceInYears = doctor.ExperienceInYears,
+                Specialization = doctor.Specialization,
+                PhoneNo = doctor.Phone,
+                CreatedAt = DateTime.Now,
+                CreatedBy = "admin",//User.Identity?.Name,
+                LastModifiedBy = "admin",//User.Identity?.Name,
+                //ProfilePicture = imageBytes,
+                Status = doctor.Status,
+                DoctorAddress = new DoctorAddress
+                {
+                    Street = doctor.Address,
+                    City = doctor.City,
+                    LastModifiedDate = DateTime.Now,
+                    Country = doctor.Country,
+                    ZipCode = doctor.ZipCode,
+                    CreatedBy = "admin",
+                    LastModifiedBy = "admin",
+                    CreatedDate = DateTime.Now,
+                    State = doctor.State
+
+                }
+            };
+            await repo.AddDoctorAsync(doc);
+            return Created($"api/Doctor/add/{doc.DoctorId}",doc);
         }
 
         [HttpPut]

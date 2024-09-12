@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -8,7 +9,9 @@ namespace CMD.Domain.Entities
 {
     public class Doctor
     {
+        [Key]
         public int DoctorId { get; set; }
+        [Required(ErrorMessage ="FirstName is a required field")]
         public string FirstName { get; set; }
         public string? LastName { get; set; }
         public string Email { get; set; }

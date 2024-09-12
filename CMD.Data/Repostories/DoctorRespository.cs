@@ -57,6 +57,11 @@ namespace CMD.Data.Repostories
             return await db.Doctors
                 .Include(d=>d.DoctorAddress)
                 .FirstOrDefaultAsync(d=>d.DoctorId==id);
+
+        public async Task AddDoctorAsync(Doctor doctor)
+        {
+            _context.Doctors.Add(doctor);
+            await _context.SaveChangesAsync();
         }
     }
 }
