@@ -29,7 +29,8 @@ namespace CMD.Data.Repostories
         public async Task<List<Doctor>> GetAllDoctorsAsync()
         {
             return await _context.Doctors
-                        .Include(d => d.DoctorAddress) 
+                        .Include(d => d.DoctorAddress)
+                        .Where(d => d.Status == true)
                         .ToListAsync();
         }
         public async Task EditDoctor(Doctor doctor)

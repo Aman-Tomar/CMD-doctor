@@ -7,6 +7,7 @@ using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
 using CMD.Domain.Services;
 using CMD.Domain.Validator;
+using Microsoft.AspNetCore.Http;
 
 namespace CMD.Domain.Managers
 {
@@ -43,7 +44,7 @@ namespace CMD.Domain.Managers
         /// A <see cref="Doctor"/> object representing the newly added doctor.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when the input data is invalid, such as incorrect name format, invalid date of birth, email, or phone number.</exception>
-        public async Task<Doctor> AddDoctor(DoctorDto doctorDto)
+        public async Task<Doctor> AddDoctor(DoctorDto doctorDto, IFormFile profilePicture)
         {
             // Validate Name
             if (!DoctorValidator.IsValidName(doctorDto.FirstName) || !DoctorValidator.IsValidName(doctorDto.LastName))
@@ -69,6 +70,12 @@ namespace CMD.Domain.Managers
                 throw new ArgumentException("Invalid phone number format. The phone number must contain 10 to 15 digits.");
             }
 
+            // Validate profile picture
+            if (!DoctorValidator.IsValidImage(profilePicture))
+            {
+                throw new ArgumentException("Only .jpg, .jpeg, and .png files are allowed.");
+            }
+
             // Validate Department
             if (!await _departmentRepository.IsValidDepartment(doctorDto.DepartmentId))
             {
@@ -88,6 +95,17 @@ namespace CMD.Domain.Managers
                 throw new ArgumentException("Address does not match the clinic's address.");
             }
 
+            // Convert profile picture to byte array
+            byte[] imageBytes = null;
+            if (profilePicture != null && profilePicture.Length > 0)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await profilePicture.CopyToAsync(memoryStream);
+                    imageBytes = memoryStream.ToArray();
+                }
+            }
+
             // Map Dto to doctor entity
             var doctor = new Doctor
             {
@@ -103,6 +121,7 @@ namespace CMD.Domain.Managers
                 ClinicId = doctorDto.ClinicId,
                 DepartmentId = doctorDto.DepartmentId,
                 PhoneNo = doctorDto.Phone,
+                ProfilePicture = imageBytes,
                 CreatedAt = DateTime.Now,
                 CreatedBy = "admin",
                 LastModifiedBy = "admin",
@@ -137,7 +156,7 @@ namespace CMD.Domain.Managers
         /// The updated <see cref="Doctor"/> entity.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when the input data is invalid, such as incorrect name format, invalid date of birth, email, or phone number.</exception>
-        public async Task<Doctor> EditDoctor(Doctor doctor, DoctorDto doctorDto)
+        public async Task<Doctor> EditDoctor(Doctor doctor, DoctorDto doctorDto, IFormFile profilePicture)
         {
             // Validate Name
             if (!DoctorValidator.IsValidName(doctorDto.FirstName) || !DoctorValidator.IsValidName(doctorDto.LastName))
@@ -163,6 +182,12 @@ namespace CMD.Domain.Managers
                 throw new ArgumentException("Invalid phone number format. The phone number must contain 10 to 15 digits.");
             }
 
+            // Validate profile picture
+            if (!DoctorValidator.IsValidImage(profilePicture))
+            {
+                throw new ArgumentException("Only .jpg, .jpeg, and .png files are allowed.");
+            }
+
             // Validate Department
             if (!await _departmentRepository.IsValidDepartment(doctorDto.DepartmentId))
             {
@@ -182,6 +207,17 @@ namespace CMD.Domain.Managers
                 throw new ArgumentException("Address does not match the clinic's address.");
             }
 
+            // Convert profile picture to byte array
+            byte[] imageBytes = null;
+            if (profilePicture != null && profilePicture.Length > 0)
+            {
+                using (var memoryStream = new MemoryStream())
+                {
+                    await profilePicture.CopyToAsync(memoryStream);
+                    imageBytes = memoryStream.ToArray();
+                }
+            }
+
             // Map Dto to existing doctor
             doctor.FirstName = doctorDto.FirstName;
             doctor.LastName = doctorDto.LastName;
@@ -193,6 +229,7 @@ namespace CMD.Domain.Managers
             doctor.DepartmentId = doctorDto.DepartmentId;
             doctor.PhoneNo = doctorDto.Phone;
             doctor.Status = doctorDto.Status;
+            doctor.ProfilePicture = imageBytes;
             doctor.Specialization = doctorDto.Specialization;
             doctor.Qualification = doctorDto.Qualification;
             doctor.ExperienceInYears = doctorDto.ExperienceInYears;

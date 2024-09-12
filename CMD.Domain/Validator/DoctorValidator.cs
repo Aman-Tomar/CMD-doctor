@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Http;
 
 namespace CMD.Domain.Validator
 {
@@ -87,6 +89,17 @@ namespace CMD.Domain.Validator
         {
             // Phone number should be digits only with a length between 10 and 15
             return Regex.IsMatch(phoneNumber, @"^\+?\d{10,15}$");
+        }
+
+        public static bool IsValidImage(IFormFile profilePicture)
+        {
+            var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
+            var extension = Path.GetExtension(profilePicture.FileName).ToLowerInvariant();
+            if (!allowedExtensions.Contains(extension))
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

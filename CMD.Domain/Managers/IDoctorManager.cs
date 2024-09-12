@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using CMD.Domain.DTO;
 using CMD.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 
 namespace CMD.Domain.Managers
 {
@@ -18,7 +19,7 @@ namespace CMD.Domain.Managers
         /// <returns>
         /// A <see cref="Task{Doctor}"/> representing the asynchronous operation, with a <see cref="Doctor"/> object representing the newly added doctor.
         /// </returns>
-        Task<Doctor> AddDoctor(DoctorDto doctorDto);
+        Task<Doctor> AddDoctor(DoctorDto doctorDto, IFormFile profilePicture);
 
         /// <summary>
         /// Edits an existing doctor in the system.
@@ -28,7 +29,7 @@ namespace CMD.Domain.Managers
         /// <returns>
         /// A <see cref="Task{Doctor}"/> representing the asynchronous operation, with the updated <see cref="Doctor"/> entity.
         /// </returns>
-        Task<Doctor> EditDoctor(Doctor doctor, DoctorDto doctorDto);
+        Task<Doctor> EditDoctor(Doctor doctor, DoctorDto doctorDto, IFormFile profilePicture);
 
         /// <summary>
         /// Retrieves a paginated list of doctors.

@@ -32,10 +32,10 @@ namespace CMD.API.Controllers
         /// <response code="201">Doctor successfully created.</response>
         /// <response code="400">Bad request if the model state is invalid or an error occurs.</response>
         [HttpPost]
-        [Consumes("application/json")]
+        [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddDoctor([FromBody] DoctorDto doctorDto)
+        public async Task<IActionResult> AddDoctor([FromForm] DoctorDto doctorDto, [FromForm] IFormFile profilePicture)
         {
             // Check if all the properties are provided
             if (!ModelState.IsValid)
@@ -45,7 +45,7 @@ namespace CMD.API.Controllers
 
             try
             {
-                var doctor = await _doctorManager.AddDoctor(doctorDto);
+                var doctor = await _doctorManager.AddDoctor(doctorDto, profilePicture);
                 var locationUri = $"api/Doctor/{doctor.DoctorId}";
                 return Created(locationUri, doctor);
             }
@@ -65,11 +65,11 @@ namespace CMD.API.Controllers
         /// <response code="404">Doctor not found.</response>
         /// <response code="400">Bad request if the model state is invalid or an error occurs.</response>
         [HttpPut]
-        [Consumes("application/json")]
+        [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> EditDoctor([FromQuery] int doctorId, [FromBody] DoctorDto doctorDto)
+        public async Task<IActionResult> EditDoctor([FromQuery] int doctorId, [FromForm] DoctorDto doctorDto, [FromForm] IFormFile profilePicture)
         {
             // Check if all the properties are provided
             if (!ModelState.IsValid)
@@ -86,7 +86,7 @@ namespace CMD.API.Controllers
 
             try
             {
-                var doctor = await _doctorManager.EditDoctor(existingDoctor, doctorDto);
+                var doctor = await _doctorManager.EditDoctor(existingDoctor, doctorDto, profilePicture);
                 return Ok(doctor);
             }
             catch (Exception ex)
@@ -132,10 +132,11 @@ namespace CMD.API.Controllers
         /// <returns>An <see cref="IActionResult"/> containing the details of the doctor.</returns>
         /// <response code="200">Successfully retrieved the doctor.</response>
         /// <response code="404">Doctor not found.</response>
-        [HttpGet("{doctorId}")]
+        /// .../api/Doctor/1234
+        [HttpGet("{doctorId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetDoctorById([FromQuery] int doctorId)
+        public async Task<IActionResult> GetDoctorById(int doctorId)
         {
             var doctor = await _doctorRepository.GetDoctorById(doctorId);
             if (doctor == null)
