@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using CMD.Domain.Entities;
+using CMD.Domain.Enums;
 
 namespace CMD.Domain.Repositories
 {
@@ -32,7 +33,7 @@ namespace CMD.Domain.Repositories
         /// A Task that represents the asynchronous operation, returning a list of <see cref="DoctorSchedule"/> entities 
         /// matching the specified doctor ID and weekday. If no schedules are found, the result will be an empty list.
         /// </returns>
-        Task<List<DoctorSchedule>> GetDoctorScheduleForWeekday(int doctorId, string weekday);
+        Task<List<DoctorSchedule>> GetDoctorScheduleForWeekday(int doctorId, Weekday weekday);
 
         /// <summary>
         /// Asynchronously updates an existing doctor schedule.

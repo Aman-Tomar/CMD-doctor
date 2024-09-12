@@ -1,11 +1,8 @@
-using CMD.API.DTO;
-using CMD.Domain.Entities;
-using CMD.Domain.Repositories;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
-using Microsoft.AspNetCore.Mvc;
 using CMD.Domain.DTO;
+using CMD.Domain.Entities;
+using CMD.Domain.Managers;
 using CMD.Domain.Repositories;
+using Microsoft.AspNetCore.Mvc;
 
 namespace CMD.API.Controllers
 {
@@ -13,151 +10,140 @@ namespace CMD.API.Controllers
     [ApiController]
     public class DoctorController : ControllerBase
     {
-        private readonly IDoctorRepository repo;
-        public DoctorController(IDoctorRepository repo)
+        private readonly IDoctorRepository _doctorRepository;
+        private readonly IDoctorManager _doctorManager;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DoctorController"/> class.
+        /// </summary>
+        /// <param name="doctorRepository">The repository for interacting with doctor data.</param>
+        /// <param name="doctorManager">The manager for handling doctor-related business logic.</param>
+        public DoctorController(IDoctorRepository doctorRepository, IDoctorManager doctorManager)
         {
-            this.repo = repo;
+            this._doctorRepository = doctorRepository;
+            this._doctorManager = doctorManager;
         }
-        // POST ../api/Doctor/Add
+
+        /// <summary>
+        /// Adds a new doctor to the system.
+        /// </summary>
+        /// <param name="doctorDto">The <see cref="DoctorDto"/> containing the details of the doctor to be added.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the result of the operation.</returns>
+        /// <response code="201">Doctor successfully created.</response>
+        /// <response code="400">Bad request if the model state is invalid or an error occurs.</response>
         [HttpPost]
         [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddDoctor([FromBody]AddDoctorDto doctor)
+        public async Task<IActionResult> AddDoctor([FromBody] DoctorDto doctorDto)
         {
-            if(!ModelState.IsValid)
+            // Check if all the properties are provided
+            if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
-            Doctor doc = new Doctor
-            {
-                FirstName = doctor.FirstName,
-                LastName = doctor.LastName,
-                BriefDescription = doctor.Biography,
-                DateOfBirth = doctor.DOB,
-                Email = doctor.Email,
-                Gender = doctor.Gender,
-                Qualification = doctor.Qualification,
-                ExperienceInYears = doctor.ExperienceInYears,
-                Specialization = doctor.Specialization,
-                PhoneNo = doctor.Phone,
-                CreatedAt = DateTime.Now,
-                CreatedBy = "admin",//User.Identity?.Name,
-                LastModifiedBy = "admin",//User.Identity?.Name,
-                //ProfilePicture = imageBytes,
-                Status = doctor.Status,
-                DoctorAddress = new DoctorAddress
-                {
-                    Street = doctor.Address,
-                    City = doctor.City,
-                    LastModifiedDate = DateTime.Now,
-                    Country = doctor.Country,
-                    ZipCode = doctor.ZipCode,
-                    CreatedBy = "admin",
-                    LastModifiedBy = "admin",
-                    CreatedDate = DateTime.Now,
-                    State = doctor.State
 
-                }
-            };
-            await repo.AddDoctorAsync(doc);
-            return Created($"api/Doctor/add/{doc.DoctorId}",doc);
+            try
+            {
+                var doctor = await _doctorManager.AddDoctor(doctorDto);
+                var locationUri = $"api/Doctor/{doctor.DoctorId}";
+                return Created(locationUri, doctor);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
+        /// <summary>
+        /// Updates an existing doctor in the system.
+        /// </summary>
+        /// <param name="doctorId">The ID of the doctor to be updated.</param>
+        /// <param name="doctorDto">The <see cref="DoctorDto"/> containing updated details for the doctor.</param>
+        /// <returns>An <see cref="IActionResult"/> representing the result of the operation.</returns>
+        /// <response code="200">Doctor successfully updated.</response>
+        /// <response code="404">Doctor not found.</response>
+        /// <response code="400">Bad request if the model state is invalid or an error occurs.</response>
         [HttpPut]
+        [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> EditDoctor([FromQuery]int id,[FromBody] EditDto doctor)
+        public async Task<IActionResult> EditDoctor([FromQuery] int doctorId, [FromBody] DoctorDto doctorDto)
         {
-            if(!ModelState.IsValid)
+            // Check if all the properties are provided
+            if (!ModelState.IsValid)
             {
                 return BadRequest();
             }
-            var doc = await repo.GetDoctorById(id);
-            if (doc == null)
+
+            // Check if doctor exists
+            var existingDoctor = await _doctorRepository.GetDoctorById(doctorId);
+            if (existingDoctor == null)
             {
-                return NotFound();
+                return NotFound("Doctor not Found");
             }
-           
-            // mapping the DTO
-            doc.FirstName = doctor.FirstName;
-            doc.LastName = doctor.LastName;
-            doc.BriefDescription = doctor.Biography;
-            doc.DateOfBirth = doctor.DOB;
-            doc.Email = doctor.Email;
-            doc.Gender = doctor.Gender;
-            doc.PhoneNo = doctor.Phone;
-            doc.Status = doctor.IsActive;
-            doc.Specialization = doctor.Specialization;
-            doc.Qualification = doctor.Qualification;
-            doc.ExperienceInYears = doctor.ExperienceInYears;
-            doc.LastModifiedBy = "admin";// User.Identity?.Name;
-          //  doc.ProfilePicture = doctor.ProfilePicture; 
-            doc.DoctorAddress.Street = doctor.Address;
-            doc.DoctorAddress.City = doctor.City;
-            doc.DoctorAddress.State = doctor.State;
-            doc.DoctorAddress.Country = doctor.Country;
-            doc.DoctorAddress.ZipCode = doctor.ZipCode;
-            doc.DoctorAddress.LastModifiedBy = "admin";//User.Identity?.Name;
-            doc.DoctorAddress.LastModifiedDate = DateTime.Now; 
-            await repo.EditDoctor(doc);
-            return Ok(doc);
+
+            try
+            {
+                var doctor = await _doctorManager.EditDoctor(existingDoctor, doctorDto);
+                return Ok(doctor);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
-        // GET ../api/Doctor - FE004
+        /// <summary>
+        /// Retrieves a paginated list of all doctors.
+        /// </summary>
+        /// <param name="page">The page number to retrieve (default is 1).</param>
+        /// <param name="pageSize">The number of items per page (default is 10).</param>
+        /// <returns>An <see cref="IActionResult"/> containing the paginated list of doctors.</returns>
+        /// <response code="200">Successfully retrieved the list of doctors.</response>
+        /// <response code="404">No doctors found.</response>
+        /// <response code="400">Bad request if an error occurs.</response>
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> GetAllDoctors([FromQuery] int pageNumber = 1, [FromQuery] int pageSize = 1)
+        public async Task<IActionResult> GetAllDoctors([FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
-            // Validating page size and page number
-            var allowedPageSizes = new[] {1,2, 20, 40, 60, 100 };
-            pageNumber = pageNumber <= 0 ? 1 : pageNumber;
-
-            // Default to 20 if the pageSize is not allowed
-            if (!allowedPageSizes.Contains(pageSize))
+            var doctors = await _doctorRepository.GetAllDoctorsAsync();
+            if (doctors == null || doctors.Count == 0)
             {
-                pageSize = 1;
+                return NotFound("There are no doctors.");
             }
-
-            // Fetch paginated doctors and total number of doctors
-            var doctors = await _repo.GetAllDoctorsAsync(pageNumber, pageSize);
-            Console.WriteLine($"Doctors retrieved: {doctors?.Count ?? 0}");
-            var totalDoctors = await _repo.GetTotalNumberOfDoctorsAsync();
-            Console.WriteLine($"Total doctors: {totalDoctors}");
-
-            // Return 404 if no doctors were found
-            if (doctors == null || !doctors.Any())
+            try
             {
-                return NotFound(new { Message = "No doctors found" });
+                var doctorSchedule = await _doctorManager.GetAllDoctor(doctors, page, pageSize);
+                return Ok(doctorSchedule);
             }
-
-            // Construct the response object with pagination metadata
-            var result = new
+            catch (Exception ex)
             {
-                TotalDoctors = totalDoctors,
-                PageNumber = pageNumber,
-                PageSize = pageSize,
-                Doctors = doctors // The doctors is mapped to DoctorDto in the data layer
-            };
-
-            return Ok(result); // Return the paginated result with 200 OK
-
-
+                return BadRequest(ex.Message);
+            }
         }
-        // GET ../api/Doctor/id - FE003
-        [HttpGet("{id:int}")]
+
+        /// <summary>
+        /// Retrieves a specific doctor by ID.
+        /// </summary>
+        /// <param name="doctorId">The ID of the doctor to retrieve.</param>
+        /// <returns>An <see cref="IActionResult"/> containing the details of the doctor.</returns>
+        /// <response code="200">Successfully retrieved the doctor.</response>
+        /// <response code="404">Doctor not found.</response>
+        [HttpGet("{doctorId}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
-        public async Task<IActionResult> GetDoctorById(int id)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetDoctorById([FromQuery] int doctorId)
         {
-            Doctor doctor = await repo.GetDoctorById(id);
-            if(doctor == null)
+            var doctor = await _doctorRepository.GetDoctorById(doctorId);
+            if (doctor == null)
             {
-                return NotFound();
+                return NotFound("Doctor not Found.");
             }
+
             return Ok(doctor);
         }
     }
-    
 }

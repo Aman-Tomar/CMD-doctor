@@ -4,18 +4,18 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CMD.Domain.Enums;
 
 namespace CMD.Domain.Entities
 {
     public class DoctorSchedule
     {
         [Key]
-        [Required]
         public int DoctorScheduleId { get; set; }
-        [StringLength(300, ErrorMessage = "The length must be less than 300 characters.")]
-        public string? Clinic { get; set; }
+        [Required(ErrorMessage = "ClinicId field is mandatory.")]
+        public int ClinicId { get; set; }
         [Required(ErrorMessage = "Weeday field is mandatory.")]
-        public string Weekday { get; set; }
+        public Weekday Weekday { get; set; }
         [Required(ErrorMessage = "StartTime field is mandatory.")]
         public TimeOnly StartTime { get; set; }
         [Required(ErrorMessage = "EndTime field is mandatory.")]
@@ -31,7 +31,7 @@ namespace CMD.Domain.Entities
         public DateTime LastModifiedDate { get; set; }
         [Required(ErrorMessage = "LastModifiedBy field is mandatory.")]
         public string LastModifiedBy { get; set; }
-        [Required(ErrorMessage = "Doctor field is mandatory.")]
+        [Required(ErrorMessage = "DoctorId field is mandatory.")]
         public int DoctorId { get; set; }
         public Doctor Doctor { get; set; }
     }

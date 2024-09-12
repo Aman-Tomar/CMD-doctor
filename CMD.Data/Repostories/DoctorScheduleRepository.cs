@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using CMD.Data.Context;
 using CMD.Domain.Entities;
+using CMD.Domain.Enums;
 using CMD.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -48,7 +49,7 @@ namespace CMD.Data.Repositories
         /// <returns>
         /// A task representing the asynchronous operation, returning a list of <see cref="DoctorSchedule"/> entities.
         /// </returns>
-        public async Task<List<DoctorSchedule>> GetDoctorScheduleForWeekday(int doctorId, string weekday)
+        public async Task<List<DoctorSchedule>> GetDoctorScheduleForWeekday(int doctorId, Weekday weekday)
         {
             return await _context.DoctorSchedules
                                  .Where(s => s.DoctorId == doctorId && s.Weekday == weekday)

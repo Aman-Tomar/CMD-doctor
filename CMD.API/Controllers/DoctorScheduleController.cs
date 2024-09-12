@@ -1,9 +1,10 @@
+using CMD.Domain.DTO;
 using CMD.Data.Repostories;
 using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
-using CMD.Domain.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using CMD.Domain.Managers;
 
 namespace CMD.API.Controllers
 {
@@ -13,25 +14,32 @@ namespace CMD.API.Controllers
     {
         private readonly IDoctorScheduleRepository _doctorScheduleRepository;
         private readonly IDoctorRepository _doctorRepository;
-        private readonly IManageDoctorSchedule _manageDoctorSchedule;
+        private readonly IDoctorScheduleManager _doctorScheduleManager;
 
-        public DoctorScheduleController(IDoctorScheduleRepository doctorScheduleRepository, IDoctorRepository doctorRepository, IManageDoctorSchedule manageDoctorSchedule)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DoctorScheduleController"/> class.
+        /// </summary>
+        /// <param name="doctorScheduleRepository">The repository for interacting with doctor schedule data.</param>
+        /// <param name="doctorRepository">The repository for interacting with doctor data.</param>
+        /// <param name="doctorScheduleManager">The manager for handling doctor schedule-related business logic.</param>
+        public DoctorScheduleController(IDoctorScheduleRepository doctorScheduleRepository, IDoctorRepository doctorRepository, IDoctorScheduleManager doctorScheduleManager)
         {
             this._doctorScheduleRepository = doctorScheduleRepository;
             this._doctorRepository = doctorRepository;
-            this._manageDoctorSchedule = manageDoctorSchedule;
+            this._doctorScheduleManager = doctorScheduleManager;
         }
 
         /// <summary>
-        /// Creates a new doctor schedule in the system.
+        /// Creates a new doctor schedule.
         /// </summary>
         /// <remarks>
         /// This endpoint allows the creation of a doctor schedule by providing the necessary details such as available time slots, dates, clinic locations, and services offered. The request must include a valid JSON payload representing the doctor's schedule. If the schedule is created successfully, the response will be a 201 Created status. If the request contains invalid data or an error occurs during processing, a corresponding error response will be returned.
         /// </remarks>
-        /// <param name="doctorSchedule">The schedule information to be created, including details like available time slots, dates, clinic locations, and services offered.</param>
+        /// <param name="doctorId">The unique identifier of the doctor for whom the schedule is being created.</param>
+        /// <param name="doctorScheduleDto">The <see cref="DoctorScheduleDto"/> containing the details of the schedule to be created.</param>
         /// <returns>
         /// A 201 Created status code if the schedule is successfully created.
-        /// A 400 Bad Request status code if the input data is invalid or if an exception occurs during the operation.
+        /// A 400 Bad Request status code if the input data is invalid or if an exception occurs during processing.
         /// </returns>
         /// <response code="201">Returned when the doctor schedule is successfully created.</response>
         /// <response code="400">Returned when the input data is invalid or when an error occurs during processing.</response>
@@ -39,118 +47,26 @@ namespace CMD.API.Controllers
         [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> AddDoctorSchedule([FromQuery] int doctorId, [FromBody] DoctorSchedule doctorSchedule)
+        public async Task<IActionResult> AddDoctorSchedule([FromQuery] int doctorId, [FromBody] DoctorScheduleDto doctorScheduleDto)
         {
-            if(!ModelState.IsValid)
-            {
-                return BadRequest(ModelState);
-            }
-
-            var doctor = await _doctorRepository.GetDoctorById(doctorId);
-            if (doctor == null)
-            {
-                return NotFound("Doctor Not Found");    
-            }
-
-            // Check if startTime is before endTime
-            if (doctorSchedule.StartTime > doctorSchedule.EndTime)
-            {
-                return BadRequest("Enter the schedule time properly.");
-            }
-
-            var isAvailable = await _manageDoctorSchedule.IsAvailable(doctorSchedule);
-            if (!isAvailable)
-            {
-                return BadRequest("Cannot create schedule for time slot because a schedule already exist.");
-            }
-
-            doctorSchedule.CreatedDate = DateTime.Now;
-            doctorSchedule.CreatedBy = "admin";
-            doctorSchedule.LastModifiedDate = DateTime.Now;
-            doctorSchedule.LastModifiedBy = "admin";
-
-            try
-            {
-                await _doctorScheduleRepository.CreateDoctorSchedule(doctorSchedule);
-                return Created();
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
-        }
-
-        /// <summary>
-        /// Updates an existing doctor schedule in the system.
-        /// </summary>
-        /// <remarks>
-        /// This endpoint allows for updating an existing doctor schedule. The schedule can be updated with new details such as clinic location, weekday, start time, end time, and status.
-        /// If the update is successful, the response will be a 200 OK status. 
-        /// If the schedule ID is not found or if any of the data is invalid, an appropriate error response will be returned.
-        /// </remarks>
-        /// <param name="doctorScheduleId">The unique identifier of the doctor schedule to be updated.</param>
-        /// <param name="doctorSchedule">The updated schedule information, including new details for clinic, weekday, start time, end time, status, and the doctor ID.</param>
-        /// <returns>
-        /// A 200 OK status code if the schedule is successfully updated.
-        /// A 400 Bad Request status code if the input data is invalid or if an exception occurs during processing.
-        /// A 404 Not Found status code if the schedule with the provided ID or the doctor with the provided ID does not exist.
-        /// </returns>
-        /// <response code="200">Returned when the doctor schedule is successfully updated.</response>
-        /// <response code="400">Returned when the input data is invalid or when an error occurs during processing.</response>
-        /// <response code="404">Returned when the doctor schedule with the specified ID or the doctor with the specified ID is not found.</response>
-        /// PUT ../api/DoctorSchedule/id
-        [HttpPut]
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<IActionResult> EditDoctorSchedule([FromQuery] int doctorScheduleId, [FromBody] DoctorSchedule doctorSchedule)
-        {
-            var existingDoctorSchedule = await _doctorScheduleRepository.GetDoctorScheduleById(doctorScheduleId);
-            if (existingDoctorSchedule == null)
-            {
-                return NotFound();
-            }
-
-            // Getting doctor for schedule
-            var doctor = await _doctorRepository.GetDoctorById(doctorSchedule.DoctorId);
-            if (doctor == null)
-            {
-                return NotFound("Doctor not found");
-            }
-
+            // Check if all the properties are valid
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            // Checking if startTime is before endTime
-            if (doctorSchedule.StartTime < doctorSchedule.EndTime)
+            // Check if doctor exists
+            var doctor = await _doctorRepository.GetDoctorById(doctorId);
+            if (doctor == null)
             {
-                return BadRequest("Please enter schedule time properly.");
+                return NotFound("Doctor Not Found.");
             }
-
-            // Check availability
-            var isAvailable = await _manageDoctorSchedule.IsAvailable(doctorSchedule);
-            if (!isAvailable)
-            {
-                return BadRequest("The selected schedule overlaps with existing schedules or is not available.");
-            }
-
-            // Mapping
-            existingDoctorSchedule.Clinic = doctorSchedule.Clinic;
-            existingDoctorSchedule.Weekday = doctorSchedule.Weekday;
-            existingDoctorSchedule.StartTime = doctorSchedule.StartTime;
-            existingDoctorSchedule.EndTime = doctorSchedule.EndTime;
-            existingDoctorSchedule.Status = doctorSchedule.Status;
-            existingDoctorSchedule.LastModifiedBy = doctorSchedule.LastModifiedBy;
-            existingDoctorSchedule.LastModifiedDate = DateTime.Now;
-            existingDoctorSchedule.DoctorId = doctorSchedule.DoctorId;
-            existingDoctorSchedule.Doctor = doctor;
 
             try
             {
-                await _doctorScheduleRepository.UpdateDoctorSchedule(existingDoctorSchedule);
-                return Ok();
+                var doctorSchedule = await _doctorScheduleManager.CreateDoctorSchedule(doctorId, doctorScheduleDto);
+                var locationUri = $"api/DoctorSchedule/{doctorSchedule.DoctorScheduleId}";
+                return Created(locationUri, doctorSchedule);
             }
             catch (Exception ex)
             {
@@ -159,53 +75,100 @@ namespace CMD.API.Controllers
         }
 
         /// <summary>
-        /// Retrieves the schedule of a specific doctor.
+        /// Updates an existing doctor schedule.
+        /// </summary>
+        /// <remarks>
+        /// This endpoint allows for updating an existing doctor schedule with new details such as clinic location, weekday, start time, end time, and status. If the update is successful, the response will be a 200 OK status. If the schedule ID or doctor ID is not found, or if any of the data is invalid, an appropriate error response will be returned.
+        /// </remarks>
+        /// <param name="doctorScheduleId">The unique identifier of the doctor schedule to be updated.</param>
+        /// <param name="doctorScheduleDto">The <see cref="DoctorScheduleDto"/> containing the updated details for the doctor schedule.</param>
+        /// <returns>
+        /// A 200 OK status code if the schedule is successfully updated.
+        /// A 400 Bad Request status code if the input data is invalid or if an exception occurs during processing.
+        /// A 404 Not Found status code if the schedule or doctor with the provided ID does not exist.
+        /// </returns>
+        /// <response code="200">Returned when the doctor schedule is successfully updated.</response>
+        /// <response code="400">Returned when the input data is invalid or when an error occurs during processing.</response>
+        /// <response code="404">Returned when the doctor schedule with the specified ID or the doctor with the specified ID is not found.</response>
+        [HttpPut]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> EditDoctorSchedule([FromQuery] int doctorScheduleId, [FromBody] DoctorScheduleDto doctorScheduleDto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Check if doctor exists
+            var doctor = await _doctorRepository.GetDoctorById(doctorScheduleDto.DoctorId);
+            if (doctor == null)
+            {
+                return NotFound("Doctor not found");
+            }
+
+            // Check if doctor schedule exists
+            var existingDoctorSchedule = await _doctorScheduleRepository.GetDoctorScheduleById(doctorScheduleId);
+            if (existingDoctorSchedule == null)
+            {
+                return NotFound("Doctor schedule not found");
+            }
+
+            try
+            {
+                var doctorSchedule = await _doctorScheduleManager.EditDoctorSchedule(doctorScheduleDto, existingDoctorSchedule, doctor);
+                return Ok(doctorSchedule);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the schedule for a specific doctor.
         /// </summary>
         /// <remarks>
         /// This endpoint fetches the schedule associated with a doctor based on the provided doctor ID. If the doctor exists and has a schedule, it returns the schedule details. If the doctor does not exist or if no schedule is available for the doctor, an appropriate error response is returned.
         /// </remarks>
         /// <param name="doctorId">The unique identifier of the doctor whose schedule is being retrieved.</param>
+        /// <param name="page">The page number to retrieve (default is 1).</param>
+        /// <param name="pageSize">The number of items per page (default is 10).</param>
         /// <returns>
         /// A 200 OK status code with the doctor's schedule if found.
         /// A 404 Not Found status code if the doctor does not exist or if the doctor has no schedule.
         /// </returns>
         /// <response code="200">Returned when the doctor's schedule is successfully retrieved.</response>
         /// <response code="404">Returned when the doctor with the specified ID is not found or if no schedule is available for the doctor.</response>
-        /// GET ../api/DoctorSchedule?id=123
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetDoctorSchedule([FromQuery] int doctorId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             // Check if doctor exists
-            var doctor = _doctorRepository.GetDoctorById(doctorId);
+            var doctor = await _doctorRepository.GetDoctorById(doctorId);
             if (doctor == null)
             {
                 return NotFound("Doctor Not Found");
             }
 
             // Check if doctor has a schedule
-            var doctorScheduleQuery = await _doctorScheduleRepository.GetScheduleByDoctorId(doctorId);
-            if (doctorScheduleQuery == null)
+            var doctorSchedules = await _doctorScheduleRepository.GetScheduleByDoctorId(doctorId);
+            if (doctorSchedules == null || !doctorSchedules.Any())
             {
                 return NotFound("The doctor has no schedule");
             }
 
-            // Apply pagination
-            var doctorSchedule = doctorScheduleQuery.Skip((page - 1) * pageSize)
-                                                    .Take(pageSize)
-                                                    .ToList();
-
-            var result = new
+            try
             {
-                Page = page,
-                PageSize = pageSize,
-                TotalItems = doctorScheduleQuery.Count(),
-                TotalPages = (int)Math.Ceiling((double)doctorScheduleQuery.Count() / pageSize),
-                Data = doctorSchedule
-            };
-
-            return Ok(result);
+                var doctorSchedule = await _doctorScheduleManager.GetDoctorSchedule(doctorSchedules, page, pageSize);
+                return Ok(doctorSchedule);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

@@ -1,8 +1,11 @@
 
 using System.Text;
 using CMD.Data.Context;
+using CMD.Data.Repositories;
 using CMD.Data.Repostories;
+using CMD.Domain.Managers;
 using CMD.Domain.Repositories;
+using CMD.Domain.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -22,6 +25,18 @@ namespace CMD.API
             builder.Services.AddDbContext<DoctorDbContext>(options =>
                 options.UseSqlServer(conncetionString)
             );
+
+            // Configure HttpClient for ClinicRepository
+            builder.Services.AddHttpClient<IClinicRepository, ClinicRepository>(client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:44365");
+            });
+
+            // Configure HttpClient for DepartmentRepository
+            builder.Services.AddHttpClient<IDepartmentRepository, DepartmentRepository>(client =>
+            {
+                client.BaseAddress = new Uri("https://localhost:44365");
+            });
 
             // Add Authentication
             //builder.Services.AddAuthentication(options =>
@@ -55,6 +70,12 @@ namespace CMD.API
             builder.Services.AddSwaggerGen();
 
             builder.Services.AddTransient<IDoctorRepository,DoctorRespository>();
+            builder.Services.AddTransient<IDoctorScheduleRepository,DoctorScheduleRepository>();
+            builder.Services.AddTransient<IDoctorScheduleManager,DoctorScheduleManager>();
+            builder.Services.AddTransient<IDoctorManager, DoctorManager>();
+            builder.Services.AddTransient<IClinicRepository, ClinicRepository>();
+            builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
+            
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.

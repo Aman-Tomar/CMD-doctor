@@ -1,17 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
 using System.Threading.Tasks;
 using CMD.API.Controllers;
 using CMD.Domain.Entities;
 using CMD.Domain.Repositories;
 using CMD.Domain.Services;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace CMD.Test
 {
@@ -73,11 +70,6 @@ namespace CMD.Test
         public async Task AddDoctorSchedule_OverlappingSchedule_ReturnsBadRequest()
         {
             // Arrange
-            var existingSchedule = new DoctorSchedule
-            {
-                StartTime = TimeOnly.FromDateTime(new DateTime(2024, 9, 11, 10, 0, 0)),
-                EndTime = TimeOnly.FromDateTime(new DateTime(2024, 9, 11, 11, 0, 0))
-            };
             _mockDoctorRepository
                 .Setup(repo => repo.GetDoctorById(It.IsAny<int>()))
                 .ReturnsAsync(new Doctor());
@@ -104,10 +96,13 @@ namespace CMD.Test
         [TestMethod]
         public async Task EditDoctorSchedule_DoctorScheduleNotFound_ReturnsNotFound()
         {
+            // Arrange
             _mockDoctorScheduleRepository.Setup(repo => repo.GetDoctorScheduleById(It.IsAny<int>())).ReturnsAsync((DoctorSchedule)null);
 
+            // Act
             var result = await _controller.EditDoctorSchedule(1, new DoctorSchedule());
 
+            // Assert
             var notFoundResult = result as NotFoundResult;
             Assert.IsNotNull(notFoundResult);
             Assert.AreEqual(StatusCodes.Status404NotFound, notFoundResult.StatusCode);
@@ -116,11 +111,15 @@ namespace CMD.Test
         [TestMethod]
         public async Task EditDoctorSchedule_SuccessfulEdit_ReturnsOk()
         {
+            // Arrange
             _mockDoctorScheduleRepository.Setup(repo => repo.GetDoctorScheduleById(It.IsAny<int>())).ReturnsAsync(new DoctorSchedule());
             _mockDoctorRepository.Setup(repo => repo.GetDoctorById(It.IsAny<int>())).ReturnsAsync(new Doctor());
             _mockManageDoctorSchedule.Setup(service => service.IsAvailable(It.IsAny<DoctorSchedule>())).ReturnsAsync(true);
 
+            // Act
             var result = await _controller.EditDoctorSchedule(1, new DoctorSchedule());
+
+            // Assert
             var okResult = result as OkResult;
             Assert.IsNotNull(okResult);
             Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);
@@ -129,14 +128,17 @@ namespace CMD.Test
         [TestMethod]
         public async Task GetDoctorSchedule_Success_ReturnsOk()
         {
+            // Arrange
             _mockDoctorRepository.Setup(repo => repo.GetDoctorById(It.IsAny<int>())).ReturnsAsync(new Doctor());
             _mockDoctorScheduleRepository.Setup(repo => repo.GetScheduleByDoctorId(It.IsAny<int>())).ReturnsAsync(new List<DoctorSchedule>
-        {
-            new DoctorSchedule { StartTime = TimeOnly.FromDateTime(DateTime.Now), EndTime = TimeOnly.FromDateTime(DateTime.Now.AddHours(1)) }
-        });
+            {
+                new DoctorSchedule { StartTime = TimeOnly.FromDateTime(DateTime.Now), EndTime = TimeOnly.FromDateTime(DateTime.Now.AddHours(1)) }
+            });
 
+            // Act
             var result = await _controller.GetDoctorSchedule(1);
 
+            // Assert
             var okResult = result as OkObjectResult;
             Assert.IsNotNull(okResult);
             Assert.AreEqual(StatusCodes.Status200OK, okResult.StatusCode);

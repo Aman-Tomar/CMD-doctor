@@ -1,0 +1,264 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+using CMD.Domain.DTO;
+using CMD.Domain.Entities;
+using CMD.Domain.Repositories;
+using CMD.Domain.Services;
+using CMD.Domain.Validator;
+
+namespace CMD.Domain.Managers
+{
+    /// <summary>
+    /// Manages operations related to doctors, including adding, editing, and retrieving doctors.
+    /// </summary>
+    public class DoctorManager : IDoctorManager
+    {
+        private readonly IDoctorRepository _doctorRepository;
+        private readonly IDepartmentRepository _departmentRepository;
+        private readonly IClinicRepository _clinicRepository;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DoctorManager"/> class.
+        /// </summary>
+        /// <param name="doctorRepository">The repository for interacting with doctor data.</param>
+        /// <param name="departmentRepository">The repository for interacting with department data.</param>
+        /// <param name="clinicRepository">The repository for interacting with clinic data.</param>
+        public DoctorManager(IDoctorRepository doctorRepository, IDepartmentRepository departmentRepository, IClinicRepository clinicRepository)
+        {
+            this._doctorRepository = doctorRepository;
+            this._departmentRepository = departmentRepository;
+            this._clinicRepository = clinicRepository;
+        }
+
+        /// <summary>
+        /// Adds a new doctor to the system.
+        /// </summary>
+        /// <remarks>
+        /// Validates the provided doctor details including name, date of birth, email, and phone number. Maps the data from the <see cref="DoctorDto"/> to a new <see cref="Doctor"/> entity and adds it to the repository.
+        /// </remarks>
+        /// <param name="doctorDto">The <see cref="DoctorDto"/> containing the details of the doctor to be added.</param>
+        /// <returns>
+        /// A <see cref="Doctor"/> object representing the newly added doctor.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when the input data is invalid, such as incorrect name format, invalid date of birth, email, or phone number.</exception>
+        public async Task<Doctor> AddDoctor(DoctorDto doctorDto)
+        {
+            // Validate Name
+            if (!DoctorValidator.IsValidName(doctorDto.FirstName) || !DoctorValidator.IsValidName(doctorDto.LastName))
+            {
+                throw new ArgumentException("Invalid name format. The name should be between 2 and 50 characters and contain only letters.");
+            }
+
+            // Validate Date of Birth
+            if (!DoctorValidator.IsValidDOB(doctorDto.DOB))
+            {
+                throw new ArgumentException("Invalid Date of Birth. The doctor must be at least 18 years old.");
+            }
+
+            // Validate Email
+            if (!DoctorValidator.IsValidEmail(doctorDto.Email))
+            {
+                throw new ArgumentException("Invalid email format.");
+            }
+
+            // Validate Phone Number
+            if (!DoctorValidator.IsValidPhoneNumber(doctorDto.Phone))
+            {
+                throw new ArgumentException("Invalid phone number format. The phone number must contain 10 to 15 digits.");
+            }
+
+            // Validate Department
+            if (!await _departmentRepository.IsValidDepartment(doctorDto.DepartmentId))
+            {
+                throw new ArgumentException("Invalid Department ID.");
+            }
+
+            // Validate Clinic
+            if (!await _clinicRepository.IsValidClinic(doctorDto.ClinicId))
+            {
+                throw new ArgumentException("Invalid Clinic ID.");
+            }
+
+            // Validate Address
+            var clinicAddress = await _clinicRepository.GetClinicAddress(doctorDto.ClinicId);
+            if (clinicAddress == null || !await IsAddressMatchingClinic(doctorDto.ClinicId, doctorDto.City, doctorDto.State, doctorDto.Country))
+            {
+                throw new ArgumentException("Address does not match the clinic's address.");
+            }
+
+            // Map Dto to doctor entity
+            var doctor = new Doctor
+            {
+                FirstName = doctorDto.FirstName,
+                LastName = doctorDto.LastName,
+                BriefDescription = doctorDto.Biography,
+                DateOfBirth = doctorDto.DOB,
+                Email = doctorDto.Email,
+                Gender = doctorDto.Gender,
+                Qualification = doctorDto.Qualification,
+                ExperienceInYears = doctorDto.ExperienceInYears,
+                Specialization = doctorDto.Specialization,
+                ClinicId = doctorDto.ClinicId,
+                DepartmentId = doctorDto.DepartmentId,
+                PhoneNo = doctorDto.Phone,
+                CreatedAt = DateTime.Now,
+                CreatedBy = "admin",
+                LastModifiedBy = "admin",
+                Status = doctorDto.Status,
+                DoctorAddress = new DoctorAddress
+                {
+                    Street = doctorDto.Address,
+                    City = doctorDto.City,
+                    LastModifiedDate = DateTime.Now,
+                    Country = doctorDto.Country,
+                    ZipCode = doctorDto.ZipCode,
+                    CreatedBy = "admin",
+                    LastModifiedBy = "admin",
+                    CreatedDate = DateTime.Now,
+                    State = doctorDto.State
+                }
+            };
+
+            await _doctorRepository.AddDoctorAsync(doctor);
+            return doctor;
+        }
+
+        /// <summary>
+        /// Edits an existing doctor in the system.
+        /// </summary>
+        /// <remarks>
+        /// Validates the provided doctor details including name, date of birth, email, and phone number. Updates the existing <see cref="Doctor"/> entity with new details from the <see cref="DoctorDto"/>.
+        /// </remarks>
+        /// <param name="doctor">The <see cref="Doctor"/> entity to be updated.</param>
+        /// <param name="doctorDto">The <see cref="DoctorDto"/> containing the updated details of the doctor.</param>
+        /// <returns>
+        /// The updated <see cref="Doctor"/> entity.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when the input data is invalid, such as incorrect name format, invalid date of birth, email, or phone number.</exception>
+        public async Task<Doctor> EditDoctor(Doctor doctor, DoctorDto doctorDto)
+        {
+            // Validate Name
+            if (!DoctorValidator.IsValidName(doctorDto.FirstName) || !DoctorValidator.IsValidName(doctorDto.LastName))
+            {
+                throw new ArgumentException("Invalid name format. The name should be between 2 and 50 characters and contain only letters.");
+            }
+
+            // Validate Date of Birth
+            if (!DoctorValidator.IsValidDOB(doctorDto.DOB))
+            {
+                throw new ArgumentException("Invalid Date of Birth. The doctor must be at least 18 years old.");
+            }
+
+            // Validate Email
+            if (!DoctorValidator.IsValidEmail(doctorDto.Email))
+            {
+                throw new ArgumentException("Invalid email format.");
+            }
+
+            // Validate Phone Number
+            if (!DoctorValidator.IsValidPhoneNumber(doctorDto.Phone))
+            {
+                throw new ArgumentException("Invalid phone number format. The phone number must contain 10 to 15 digits.");
+            }
+
+            // Validate Department
+            if (!await _departmentRepository.IsValidDepartment(doctorDto.DepartmentId))
+            {
+                throw new ArgumentException("Invalid Department ID.");
+            }
+
+            // Validate Clinic
+            if (!await _clinicRepository.IsValidClinic(doctorDto.ClinicId))
+            {
+                throw new ArgumentException("Invalid Clinic ID.");
+            }
+
+            // Validate Address
+            var clinicAddress = await _clinicRepository.GetClinicAddress(doctorDto.ClinicId);
+            if (clinicAddress == null || !await IsAddressMatchingClinic(doctorDto.ClinicId, doctorDto.City, doctorDto.State, doctorDto.Country))
+            {
+                throw new ArgumentException("Address does not match the clinic's address.");
+            }
+
+            // Map Dto to existing doctor
+            doctor.FirstName = doctorDto.FirstName;
+            doctor.LastName = doctorDto.LastName;
+            doctor.BriefDescription = doctorDto.Biography;
+            doctor.DateOfBirth = doctorDto.DOB;
+            doctor.Email = doctorDto.Email;
+            doctor.Gender = doctorDto.Gender;
+            doctor.ClinicId = doctorDto.ClinicId;
+            doctor.DepartmentId = doctorDto.DepartmentId;
+            doctor.PhoneNo = doctorDto.Phone;
+            doctor.Status = doctorDto.Status;
+            doctor.Specialization = doctorDto.Specialization;
+            doctor.Qualification = doctorDto.Qualification;
+            doctor.ExperienceInYears = doctorDto.ExperienceInYears;
+            doctor.LastModifiedBy = "admin";
+            doctor.DoctorAddress.Street = doctorDto.Address;
+            doctor.DoctorAddress.City = doctorDto.City;
+            doctor.DoctorAddress.State = doctorDto.State;
+            doctor.DoctorAddress.Country = doctorDto.Country;
+            doctor.DoctorAddress.ZipCode = doctorDto.ZipCode;
+            doctor.DoctorAddress.LastModifiedBy = "admin";
+            doctor.DoctorAddress.LastModifiedDate = DateTime.Now;
+
+            await _doctorRepository.EditDoctor(doctor);
+            return doctor;
+        }
+
+        /// <summary>
+        /// Retrieves a paginated list of doctors.
+        /// </summary>
+        /// <remarks>
+        /// Returns a paginated list of doctors with information about the current page, page size, total items, and total pages.
+        /// </remarks>
+        /// <param name="doctors">A list of <see cref="Doctor"/> entities to be paginated.</param>
+        /// <param name="page">The page number to retrieve (must be greater than 0).</param>
+        /// <param name="pageSize">The number of items per page (must be greater than 0).</param>
+        /// <returns>
+        /// An object containing the paginated list of doctors along with pagination metadata.
+        /// </returns>
+        /// <exception cref="ArgumentException">Thrown when the page number or page size is less than or equal to 0.</exception>
+        public async Task<object> GetAllDoctor(List<Doctor> doctors, int page, int pageSize)
+        {
+            if (page <= 0) throw new ArgumentException("Invalid page number. Enter greater than 0");
+            if (pageSize <= 0) throw new ArgumentException("Invalid page size. Enter greater than 0");
+
+            var schedules = doctors.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+            return new
+            {
+                Page = page,
+                PageSize = pageSize,
+                TotalItems = doctors.Count(),
+                TotalPages = (int)Math.Ceiling((double)doctors.Count() / pageSize),
+                Data = schedules
+            };
+        }
+
+        /// <summary>
+        /// Checks if the address provided matches the clinic's address.
+        /// </summary>
+        /// <param name="clinicId">The ID of the clinic to compare with.</param>
+        /// <param name="city">The city of the address.</param>
+        /// <param name="state">The state of the address.</param>
+        /// <param name="country">The country of the address.</param>
+        /// <returns>A boolean indicating if the address matches the clinic's address.</returns>
+        public async Task<bool> IsAddressMatchingClinic(int clinicId, string city, string state, string country)
+        {
+            var clinic = await _clinicRepository.GetClinicAddress(clinicId);
+            if (clinic == null)
+            {
+                return false;
+            }
+
+            return clinic.Country == country; 
+
+            /*return clinic.Address.City == city &&
+                   clinic.Address.State == state &&
+                   clinic.Address.Country == country;*/
+        }
+    }
+}

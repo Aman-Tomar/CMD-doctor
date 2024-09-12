@@ -21,10 +21,15 @@ namespace CMD.Domain.Entities
         public string State { get; set; }
         [Required(ErrorMessage = "Country is a required field")]
         public string Country { get; set; }
+        [Required(ErrorMessage = "ZipCode is a required field")]
         public string ZipCode { get; set; }
+        [Required(ErrorMessage = "CreatedDate is a required field")]
         public DateTime CreatedDate { get; set; }
+        [Required(ErrorMessage = "CreatedBy is a required field")]
         public string CreatedBy { get; set; }
+        [Required(ErrorMessage = "LastModifiedDate is a required field")]
         public DateTime LastModifiedDate { get; set; }
+        [Required(ErrorMessage = "LastModifiedBy is a required field")]
         public string LastModifiedBy { get; set; }
         [ForeignKey("Doctor")]
         public int DoctorId { get; set; }

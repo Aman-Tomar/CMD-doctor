@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using CMD.Domain.Entities;
+using CMD.Domain.DTO;
 using CMD.Domain.Entities;
 
 namespace CMD.Domain.Repositories
@@ -15,8 +15,7 @@ namespace CMD.Domain.Repositories
     /// </summary>
     public interface IDoctorRepository
     {
-        Task<List<DoctorDto>> GetAllDoctorsAsync(int pageNumber,int pageSize);
-        Task<int> GetTotalNumberOfDoctorsAsync();
+        Task<List<Doctor>> GetAllDoctorsAsync();
         Task EditDoctor(Doctor doctor);
         Task<Doctor> GetDoctorById(int id);
         Task AddDoctorAsync(Doctor doctor);
