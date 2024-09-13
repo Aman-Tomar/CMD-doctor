@@ -19,7 +19,7 @@ namespace CMD.Domain.Managers
         /// <returns>
         /// A <see cref="Task{Doctor}"/> representing the asynchronous operation, with a <see cref="Doctor"/> object representing the newly added doctor.
         /// </returns>
-        Task<Doctor> AddDoctor(DoctorDto doctorDto, IFormFile profilePicture);
+        Task<Doctor> AddDoctorAsync(DoctorDto doctorDto);
 
         /// <summary>
         /// Edits an existing doctor in the system.
@@ -29,7 +29,7 @@ namespace CMD.Domain.Managers
         /// <returns>
         /// A <see cref="Task{Doctor}"/> representing the asynchronous operation, with the updated <see cref="Doctor"/> entity.
         /// </returns>
-        Task<Doctor> EditDoctor(Doctor doctor, DoctorDto doctorDto, IFormFile profilePicture);
+        Task<Doctor> EditDoctorAsync(Doctor doctor, DoctorDto doctorDto);
 
         /// <summary>
         /// Retrieves a paginated list of doctors.
@@ -40,6 +40,6 @@ namespace CMD.Domain.Managers
         /// <returns>
         /// A <see cref="Task{object}"/> representing the asynchronous operation, with an object containing the paginated list of doctors along with pagination metadata.
         /// </returns>
-        Task<object> GetAllDoctor(List<Doctor> doctors, int page, int pageSize);
+        Task<object> GetAllDoctorAsync(List<Doctor> doctors, int page, int pageSize);
     }
 }

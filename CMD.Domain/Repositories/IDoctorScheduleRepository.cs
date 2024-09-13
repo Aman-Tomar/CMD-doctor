@@ -22,7 +22,7 @@ namespace CMD.Domain.Repositories
         /// <returns>
         /// A Task that represents the asynchronous operation of creating a doctor schedule.
         /// </returns>
-        Task CreateDoctorSchedule(DoctorSchedule doctorSchedule);
+        Task CreateDoctorScheduleAsync(DoctorSchedule doctorSchedule);
 
         /// <summary>
         /// Asynchronously retrieves a list of doctor schedules for a given doctor on a specific weekday.
@@ -33,7 +33,7 @@ namespace CMD.Domain.Repositories
         /// A Task that represents the asynchronous operation, returning a list of <see cref="DoctorSchedule"/> entities 
         /// matching the specified doctor ID and weekday. If no schedules are found, the result will be an empty list.
         /// </returns>
-        Task<List<DoctorSchedule>> GetDoctorScheduleForWeekday(int doctorId, Weekday weekday);
+        Task<List<DoctorSchedule>> GetDoctorScheduleForWeekdayAsync(int doctorId, Weekday weekday);
 
         /// <summary>
         /// Asynchronously updates an existing doctor schedule.
@@ -42,7 +42,7 @@ namespace CMD.Domain.Repositories
         /// <returns>
         /// A Task that represents the asynchronous operation of updating the doctor schedule.
         /// </returns>
-        Task UpdateDoctorSchedule(DoctorSchedule doctorSchedule);
+        Task UpdateDoctorScheduleAsync(DoctorSchedule doctorSchedule);
 
         /// <summary>
         /// Asynchronously retrieves a doctor schedule by its unique identifier.
@@ -52,7 +52,7 @@ namespace CMD.Domain.Repositories
         /// A Task that represents the asynchronous operation, returning the <see cref="DoctorSchedule"/> entity 
         /// if found; otherwise, null.
         /// </returns>
-        Task<DoctorSchedule> GetDoctorScheduleById(int doctorScheduleId);
+        Task<DoctorSchedule> GetDoctorScheduleByIdAsync(int doctorScheduleId);
 
         /// <summary>
         /// Asynchronously retrieves a list of schedules for a specific doctor based on the provided doctor ID.
@@ -62,6 +62,6 @@ namespace CMD.Domain.Repositories
         /// A Task that represents the asynchronous operation. The task result contains a list of <see cref="DoctorSchedule"/> 
         /// objects associated with the doctor. If no schedules are found, the result will be an empty list.
         /// </returns>
-        Task<List<DoctorSchedule>> GetScheduleByDoctorId(int doctorId);
+        Task<List<DoctorSchedule>> GetScheduleByDoctorIdAsync(int doctorId);
     }
 }

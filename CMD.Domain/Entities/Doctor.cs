@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using CMD.Domain.Enums;
 
 namespace CMD.Domain.Entities
 {
@@ -43,7 +44,7 @@ namespace CMD.Domain.Entities
         public DateTime DateOfBirth { get; set; }
 
         [Required(ErrorMessage = "Gender field is mandatory.")]
-        public string Gender { get; set; }
+        public Gender Gender { get; set; }
 
         [StringLength(100, ErrorMessage = "Qualification must be less than 100 characters.")]
         public string Qualification { get; set; }

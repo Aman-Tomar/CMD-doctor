@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ExceptionMessages>
+	<Message key="ImageFileSizeExceededException">The uploaded image file size exceeds the allowed limit.</Message>
+	<Message key="InvalidClinicException">The specified clinic is invalid or does not exist.</Message>
+	<Message key="InvalidDepartmentException">The specified department is invalid or does not exist.</Message>
+	<Message key="InvalidDOBException">The provided date of birth is invalid.</Message>
+	<Message key="InvalidDoctorAddressException">The provided doctor's address is invalid or does not match the clinic's location.</Message>
+	<Message key="InvalidDoctorScheduleException">The doctor's schedule contains invalid or conflicting details.</Message>
+	<Message key="InvalidEmailException">The provided email address is invalid.</Message>
+	<Message key="InvalidGenderException">The provided gender is invalid.</Message>
+	<Message key="InvalidImageTypeException">The uploaded image file type is not supported.</Message>
+	<Message key="InvalidNameException">The provided name contains invalid characters or is in an incorrect format.</Message>
+	<Message key="InvalidPageNumberException">The provided page number is invalid.</Message>
+	<Message key="InvalidPageSizeException">The provided page size is invalid.</Message>
+	<Message key="InvalidPhoneNumberException">The provided phone number is invalid.</Message>
+	<Message key="InvalidTimeException">The provided time is invalid or conflicts with an existing schedule.</Message>
+	<Message key="InvalidWeekdayException">The provided weekday is invalid.</Message>
+	<Message key="DoctorNotFound">Doctor not found.</Message>
+	<Message key="DoctorScheduleNotFound">Doctor schedule not found.</Message>
+</ExceptionMessages>

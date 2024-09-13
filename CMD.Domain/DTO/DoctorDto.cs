@@ -4,6 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace CMD.Domain.DTO
 {
@@ -45,6 +46,7 @@ namespace CMD.Domain.DTO
         public string Specialization { get; set; }
         [Required(ErrorMessage = "ExperienceInYears field is mandatory.")]
         public int ExperienceInYears { get; set; }
+        public IFormFile? profilePicture { get; set; }
         public string? Qualification { get; set; }
         [Required]
         public int DepartmentId { get; set; }

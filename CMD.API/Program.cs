@@ -26,16 +26,17 @@ namespace CMD.API
                 options.UseSqlServer(conncetionString)
             );
 
+            
             // Configure HttpClient for ClinicRepository
             builder.Services.AddHttpClient<IClinicRepository, ClinicRepository>(client =>
             {
-                client.BaseAddress = new Uri("https://localhost:44365");
+                client.BaseAddress = new Uri("");
             });
 
             // Configure HttpClient for DepartmentRepository
             builder.Services.AddHttpClient<IDepartmentRepository, DepartmentRepository>(client =>
             {
-                client.BaseAddress = new Uri("https://localhost:44365");
+                client.BaseAddress = new Uri("");
             });
 
             // Add Authentication
@@ -75,6 +76,7 @@ namespace CMD.API
             builder.Services.AddTransient<IDoctorManager, DoctorManager>();
             builder.Services.AddTransient<IClinicRepository, ClinicRepository>();
             builder.Services.AddTransient<IDepartmentRepository, DepartmentRepository>();
+            builder.Services.AddTransient<IMessageService, MessageService>();
             
             var app = builder.Build();
 

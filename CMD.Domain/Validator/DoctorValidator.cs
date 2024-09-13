@@ -91,11 +91,34 @@ namespace CMD.Domain.Validator
             return Regex.IsMatch(phoneNumber, @"^\+?\d{10,15}$");
         }
 
+        /// <summary>
+        /// Validates if the provided image file is of an allowed type.
+        /// </summary>
+        /// <param name="profilePicture">The image file to validate.</param>
+        /// <returns>
+        /// <c>true</c> if the image file is valid; otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// The image file must have an extension of ".jpg", ".jpeg", or ".png". Other file types are not allowed.
+        /// </remarks>
         public static bool IsValidImage(IFormFile profilePicture)
         {
+            
+            // extension type validation
             var allowedExtensions = new[] { ".jpg", ".jpeg", ".png" };
             var extension = Path.GetExtension(profilePicture.FileName).ToLowerInvariant();
             if (!allowedExtensions.Contains(extension))
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public static bool IsValidImageSize(IFormFile profilePicture)
+        {
+            // Size validation
+            const long maxFileSize = 5 * 1024 * 1024;     // 5 MB in bytes
+            if (profilePicture.Length > maxFileSize)
             {
                 return false;
             }

@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using CMD.Domain.DTO;
 using CMD.Domain.Entities;
 using CMD.Domain.Enums;
+using CMD.Domain.Exceptions;
 using CMD.Domain.Repositories;
+using CMD.Domain.Services;
 
 namespace CMD.Domain.Managers
 {
@@ -16,16 +18,19 @@ namespace CMD.Domain.Managers
     {
         private readonly IDoctorScheduleRepository _doctorScheduleRepository;
         private readonly IDoctorRepository _doctorRepository;
+        private readonly IMessageService _messageService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DoctorScheduleManager"/> class.
         /// </summary>
         /// <param name="doctorScheduleRepository">Repository for interacting with doctor schedules.</param>
         /// <param name="doctorRepository">Repository for interacting with doctor information.</param>
-        public DoctorScheduleManager(IDoctorScheduleRepository doctorScheduleRepository, IDoctorRepository doctorRepository)
+        /// <param name="messageService">The service for providing custom error messages.</param>
+        public DoctorScheduleManager(IDoctorScheduleRepository doctorScheduleRepository, IDoctorRepository doctorRepository, IMessageService messageService)
         {
             _doctorScheduleRepository = doctorScheduleRepository;
             _doctorRepository = doctorRepository;
+            this._messageService = messageService;
         }
 
         /// <summary>
@@ -34,24 +39,24 @@ namespace CMD.Domain.Managers
         /// <param name="doctorId">Doctor ID for whom the schedule is being created.</param>
         /// <param name="doctorScheduleDto">Data Transfer Object containing schedule details.</param>
         /// <returns>Created doctor schedule entity.</returns>
-        public async Task<DoctorSchedule> CreateDoctorSchedule(int doctorId, DoctorScheduleDto doctorScheduleDto)
+        public async Task<DoctorSchedule> CreateDoctorScheduleAsync(int doctorId, DoctorScheduleDto doctorScheduleDto)
         {
             // Validate weekday
             if (!Enum.TryParse<Weekday>(doctorScheduleDto.Weekday.ToUpper(), out var weekday))
             {
-                throw new ArgumentException("Invalid Weekday provided.");
+                throw new InvalidWeekdayException(_messageService.GetMessage("InvalidWeekdayException"));
             }
 
             // Validate schedule time
-            if (await IsScheduleTimeValid(doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+            if (await IsScheduleTimeValidAsync(doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
             {
-                throw new ArgumentException("Invalid time range.");
+                throw new InvalidTimeException(_messageService.GetMessage("InvalidTimeException"));
             }
 
             // Check if doctor is available for the schedule
-            if (!await IsDoctorAvailableForSchedule(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+            if (!await IsDoctorAvailableForScheduleAsync(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
             {
-                throw new ArgumentException("Doctor schedule is unavailable.");
+                throw new InvalidDoctorScheduleException(_messageService.GetMessage("InvalidDoctorScheduleException"));
             }
 
 
@@ -63,14 +68,14 @@ namespace CMD.Domain.Managers
                 StartTime = TimeOnly.Parse(doctorScheduleDto.StartTime),
                 EndTime = TimeOnly.Parse(doctorScheduleDto.EndTime),
                 Status = doctorScheduleDto.Status,
-                DoctorId = doctorScheduleDto.DoctorId,
+                DoctorId = doctorId,
                 CreatedDate = DateTime.Now,
                 CreatedBy = "admin",
                 LastModifiedDate = DateTime.Now,
                 LastModifiedBy = "admin"
             };
 
-            await _doctorScheduleRepository.CreateDoctorSchedule(doctorSchedule);
+            await _doctorScheduleRepository.CreateDoctorScheduleAsync(doctorSchedule);
             return doctorSchedule;
         }
 
@@ -81,24 +86,24 @@ namespace CMD.Domain.Managers
         /// <param name="doctorSchedule">Existing schedule to be updated.</param>
         /// <param name="doctor">Doctor associated with the schedule.</param>
         /// <returns>Updated doctor schedule entity.</returns>
-        public async Task<DoctorSchedule> EditDoctorSchedule(DoctorScheduleDto doctorScheduleDto, DoctorSchedule doctorSchedule, Doctor doctor)
+        public async Task<DoctorSchedule> EditDoctorScheduleAsync(DoctorScheduleDto doctorScheduleDto, DoctorSchedule doctorSchedule, Doctor doctor)
         {
             // Validate weekday
             if (!Enum.TryParse<Weekday>(doctorScheduleDto.Weekday.ToUpper(), out var weekday))
             {
-                throw new ArgumentException("Invalid Weekday provided.");
+                throw new InvalidWeekdayException(_messageService.GetMessage("InvalidWeekdayException"));
             }
 
             // Validate schedule time
-            if (await IsScheduleTimeValid(doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+            if (await IsScheduleTimeValidAsync(doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
             {
-                throw new ArgumentException("Invalid time range.");
+                throw new InvalidTimeException(_messageService.GetMessage("InvalidTimeException"));
             }
 
-            // Check if doctor is available
-            if (!await IsDoctorAvailableForSchedule(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+            // Check if doctor is available for the schedule
+            if (!await IsDoctorAvailableForScheduleAsync(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
             {
-                throw new ArgumentException("Doctor schedule is unavailable.");
+                throw new InvalidDoctorScheduleException(_messageService.GetMessage("InvalidDoctorScheduleException"));
             }
 
 
@@ -113,7 +118,7 @@ namespace CMD.Domain.Managers
             doctorSchedule.DoctorId = doctorScheduleDto.DoctorId;
             doctorSchedule.Doctor = doctor;
 
-            await _doctorScheduleRepository.UpdateDoctorSchedule(doctorSchedule);
+            await _doctorScheduleRepository.UpdateDoctorScheduleAsync(doctorSchedule);
             return doctorSchedule;
         }
 
@@ -124,10 +129,10 @@ namespace CMD.Domain.Managers
         /// <param name="page">Current page number.</param>
         /// <param name="pageSize">Number of items per page.</param>
         /// <returns>Paginated result containing doctor schedules for the specified page and size.</returns>
-        public async Task<object> GetDoctorSchedule(List<DoctorSchedule> doctorSchedules, int page, int pageSize)
+        public async Task<object> GetDoctorScheduleAsync(List<DoctorSchedule> doctorSchedules, int page, int pageSize)
         {
-            if (page <= 0) throw new ArgumentException("Invalid page number. Enter greater than 0");
-            if (pageSize <= 0) throw new ArgumentException("Invalid page size. Enter greater than 0");
+            if (page <= 0) throw new InvalidPageNumberException(_messageService.GetMessage("InvalidPageNumberException"));
+            if (pageSize <= 0) throw new InvalidPageSizeException(_messageService.GetMessage("InvalidPageSizeException"));
 
             var schedules = doctorSchedules.Skip((page - 1) * pageSize).Take(pageSize).ToList();
             return new
@@ -148,9 +153,9 @@ namespace CMD.Domain.Managers
         /// <param name="startTime">Start time of the schedule.</param>
         /// <param name="endTime">End time of the schedule.</param>
         /// <returns>True if no overlapping schedules, false otherwise.</returns>
-        public async Task<bool> IsDoctorAvailableForSchedule(int doctorId, Weekday weekday, string startTime, string endTime)
+        public async Task<bool> IsDoctorAvailableForScheduleAsync(int doctorId, Weekday weekday, string startTime, string endTime)
         {
-            var existingSchedules = await _doctorScheduleRepository.GetDoctorScheduleForWeekday(doctorId, weekday);
+            var existingSchedules = await _doctorScheduleRepository.GetDoctorScheduleForWeekdayAsync(doctorId, weekday);
             TimeOnly sTime = TimeOnly.Parse(startTime);
             TimeOnly eTime = TimeOnly.Parse(endTime);
 
@@ -165,10 +170,10 @@ namespace CMD.Domain.Managers
         /// <param name="startTime">Start time.</param>
         /// <param name="endTime">End time.</param>
         /// <returns>True if the time range is valid, false otherwise.</returns>
-        public async Task<bool> IsScheduleTimeValid(string startTime, string endTime)
+        public async Task<bool> IsScheduleTimeValidAsync(string startTime, string endTime)
         {
             if (string.IsNullOrEmpty(startTime) || string.IsNullOrEmpty(endTime)) return false;
-            return TimeOnly.Parse(startTime) <= TimeOnly.Parse(endTime);
+            return TimeOnly.Parse(startTime) >= TimeOnly.Parse(endTime);
         }
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using CMD.Domain.DTO;
 using CMD.Domain.Entities;
+using CMD.Domain.Enums;
+using CMD.Domain.Exceptions;
 using CMD.Domain.Repositories;
 using CMD.Domain.Services;
 using CMD.Domain.Validator;
@@ -19,6 +21,7 @@ namespace CMD.Domain.Managers
         private readonly IDoctorRepository _doctorRepository;
         private readonly IDepartmentRepository _departmentRepository;
         private readonly IClinicRepository _clinicRepository;
+        private readonly IMessageService _messageService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DoctorManager"/> class.
@@ -26,11 +29,13 @@ namespace CMD.Domain.Managers
         /// <param name="doctorRepository">The repository for interacting with doctor data.</param>
         /// <param name="departmentRepository">The repository for interacting with department data.</param>
         /// <param name="clinicRepository">The repository for interacting with clinic data.</param>
-        public DoctorManager(IDoctorRepository doctorRepository, IDepartmentRepository departmentRepository, IClinicRepository clinicRepository)
+        /// <param name="messageService">The service for providing custom error messages.</param>
+        public DoctorManager(IDoctorRepository doctorRepository, IDepartmentRepository departmentRepository, IClinicRepository clinicRepository, IMessageService messageService)
         {
             this._doctorRepository = doctorRepository;
             this._departmentRepository = departmentRepository;
             this._clinicRepository = clinicRepository;
+            this._messageService = messageService;
         }
 
         /// <summary>
@@ -44,67 +49,82 @@ namespace CMD.Domain.Managers
         /// A <see cref="Doctor"/> object representing the newly added doctor.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when the input data is invalid, such as incorrect name format, invalid date of birth, email, or phone number.</exception>
-        public async Task<Doctor> AddDoctor(DoctorDto doctorDto, IFormFile profilePicture)
+        public async Task<Doctor> AddDoctorAsync(DoctorDto doctorDto)
         {
             // Validate Name
             if (!DoctorValidator.IsValidName(doctorDto.FirstName) || !DoctorValidator.IsValidName(doctorDto.LastName))
             {
-                throw new ArgumentException("Invalid name format. The name should be between 2 and 50 characters and contain only letters.");
+                throw new InvalidNameException(_messageService.GetMessage("InvalidNameException"));
             }
 
             // Validate Date of Birth
             if (!DoctorValidator.IsValidDOB(doctorDto.DOB))
             {
-                throw new ArgumentException("Invalid Date of Birth. The doctor must be at least 18 years old.");
+                throw new InvalidDOBException(_messageService.GetMessage("InvalidDOBException"));
             }
 
             // Validate Email
             if (!DoctorValidator.IsValidEmail(doctorDto.Email))
             {
-                throw new ArgumentException("Invalid email format.");
+                throw new InvalidEmailException(_messageService.GetMessage("InvalidEmailException"));
+            }
+
+            // Validate Gender
+            if (!Enum.TryParse<Gender>(doctorDto.Gender.ToUpper(), out var gender))
+            {
+                throw new InvalidGenderException(_messageService.GetMessage("InvalidGenderException"));
             }
 
             // Validate Phone Number
             if (!DoctorValidator.IsValidPhoneNumber(doctorDto.Phone))
             {
-                throw new ArgumentException("Invalid phone number format. The phone number must contain 10 to 15 digits.");
+                throw new InvalidPhoneNumberException(_messageService.GetMessage("InvalidPhoneNumberException"));
             }
 
+            byte[] imageBytes = null;
             // Validate profile picture
-            if (!DoctorValidator.IsValidImage(profilePicture))
+            if (doctorDto.profilePicture != null)
             {
-                throw new ArgumentException("Only .jpg, .jpeg, and .png files are allowed.");
+                if (!DoctorValidator.IsValidImage(doctorDto.profilePicture))
+                {
+                    throw new InvalidImageTypeException(_messageService.GetMessage("InvalidImageTypeException"));
+                }
+                else if (!DoctorValidator.IsValidImage(doctorDto.profilePicture))
+                {
+                    throw new ImageFileSizeExceededException(_messageService.GetMessage("ImageFileSizeExceededException"));
+                }
+                else {
+                    // Convert profile picture to byte array
+                    if (doctorDto.profilePicture != null && doctorDto.profilePicture.Length > 0)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await doctorDto.profilePicture.CopyToAsync(memoryStream);
+                            imageBytes = memoryStream.ToArray();
+                        }
+                    }
+                }
             }
 
             // Validate Department
-            if (!await _departmentRepository.IsValidDepartment(doctorDto.DepartmentId))
+            if (!await _departmentRepository.IsValidDepartmentAsync(doctorDto.DepartmentId))
             {
-                throw new ArgumentException("Invalid Department ID.");
+                 throw new InvalidDepartmentException(_messageService.GetMessage("InvalidDepartmentException"));
             }
 
             // Validate Clinic
-            if (!await _clinicRepository.IsValidClinic(doctorDto.ClinicId))
+            if (!await _clinicRepository.IsValidClinicAsync(doctorDto.ClinicId))
             {
-                throw new ArgumentException("Invalid Clinic ID.");
+                 throw new InvalidClinicException(_messageService.GetMessage("InvalidClinicException"));
             }
 
             // Validate Address
-            var clinicAddress = await _clinicRepository.GetClinicAddress(doctorDto.ClinicId);
-            if (clinicAddress == null || !await IsAddressMatchingClinic(doctorDto.ClinicId, doctorDto.City, doctorDto.State, doctorDto.Country))
+            var clinicAddress = await _clinicRepository.GetClinicAddressAsync(doctorDto.ClinicId);
+            if (clinicAddress == null || !await IsAddressMatchingClinicAsync(doctorDto.ClinicId, doctorDto.City, doctorDto.State, doctorDto.Country))
             {
-                throw new ArgumentException("Address does not match the clinic's address.");
+                throw new InvalidDoctorAddressException(_messageService.GetMessage("InvalidDoctorAddressException"));
             }
 
-            // Convert profile picture to byte array
-            byte[] imageBytes = null;
-            if (profilePicture != null && profilePicture.Length > 0)
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    await profilePicture.CopyToAsync(memoryStream);
-                    imageBytes = memoryStream.ToArray();
-                }
-            }
 
             // Map Dto to doctor entity
             var doctor = new Doctor
@@ -114,7 +134,7 @@ namespace CMD.Domain.Managers
                 BriefDescription = doctorDto.Biography,
                 DateOfBirth = doctorDto.DOB,
                 Email = doctorDto.Email,
-                Gender = doctorDto.Gender,
+                Gender = gender,
                 Qualification = doctorDto.Qualification,
                 ExperienceInYears = doctorDto.ExperienceInYears,
                 Specialization = doctorDto.Specialization,
@@ -156,66 +176,81 @@ namespace CMD.Domain.Managers
         /// The updated <see cref="Doctor"/> entity.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when the input data is invalid, such as incorrect name format, invalid date of birth, email, or phone number.</exception>
-        public async Task<Doctor> EditDoctor(Doctor doctor, DoctorDto doctorDto, IFormFile profilePicture)
+        public async Task<Doctor> EditDoctorAsync(Doctor doctor, DoctorDto doctorDto)
         {
             // Validate Name
             if (!DoctorValidator.IsValidName(doctorDto.FirstName) || !DoctorValidator.IsValidName(doctorDto.LastName))
             {
-                throw new ArgumentException("Invalid name format. The name should be between 2 and 50 characters and contain only letters.");
+                throw new InvalidNameException(_messageService.GetMessage("InvalidNameException"));
             }
 
             // Validate Date of Birth
             if (!DoctorValidator.IsValidDOB(doctorDto.DOB))
             {
-                throw new ArgumentException("Invalid Date of Birth. The doctor must be at least 18 years old.");
+                throw new InvalidDOBException(_messageService.GetMessage("InvalidDOBException"));
             }
 
             // Validate Email
             if (!DoctorValidator.IsValidEmail(doctorDto.Email))
             {
-                throw new ArgumentException("Invalid email format.");
+                throw new InvalidEmailException(_messageService.GetMessage("InvalidEmailException"));
+            }
+
+            // Validate Gender
+            if (!Enum.TryParse<Gender>(doctorDto.Gender.ToUpper(), out var gender))
+            {
+                throw new InvalidGenderException(_messageService.GetMessage("InvalidGenderException"));
             }
 
             // Validate Phone Number
             if (!DoctorValidator.IsValidPhoneNumber(doctorDto.Phone))
             {
-                throw new ArgumentException("Invalid phone number format. The phone number must contain 10 to 15 digits.");
+                throw new InvalidPhoneNumberException(_messageService.GetMessage("InvalidPhoneNumberException"));
             }
 
+            byte[] imageBytes = null;
             // Validate profile picture
-            if (!DoctorValidator.IsValidImage(profilePicture))
+            if (doctorDto.profilePicture != null)
             {
-                throw new ArgumentException("Only .jpg, .jpeg, and .png files are allowed.");
+                if (!DoctorValidator.IsValidImage(doctorDto.profilePicture))
+                {
+                    throw new InvalidImageTypeException(_messageService.GetMessage("InvalidImageTypeException"));
+                }
+                else if (!DoctorValidator.IsValidImage(doctorDto.profilePicture))
+                {
+                    throw new ImageFileSizeExceededException(_messageService.GetMessage("ImageFileSizeExceededException"));
+                }
+                else
+                {
+                    // Convert profile picture to byte array
+                    if (doctorDto.profilePicture != null && doctorDto.profilePicture.Length > 0)
+                    {
+                        using (var memoryStream = new MemoryStream())
+                        {
+                            await doctorDto.profilePicture.CopyToAsync(memoryStream);
+                            imageBytes = memoryStream.ToArray();
+                        }
+                    }
+                }
             }
 
             // Validate Department
-            if (!await _departmentRepository.IsValidDepartment(doctorDto.DepartmentId))
+            if (!await _departmentRepository.IsValidDepartmentAsync(doctorDto.DepartmentId))
             {
-                throw new ArgumentException("Invalid Department ID.");
+                throw new InvalidDepartmentException(_messageService.GetMessage("InvalidDepartmentException"));
             }
 
             // Validate Clinic
-            if (!await _clinicRepository.IsValidClinic(doctorDto.ClinicId))
+            if (!await _clinicRepository.IsValidClinicAsync(doctorDto.ClinicId))
             {
-                throw new ArgumentException("Invalid Clinic ID.");
+                throw new InvalidClinicException(_messageService.GetMessage("InvalidClinicException"));
             }
 
             // Validate Address
-            var clinicAddress = await _clinicRepository.GetClinicAddress(doctorDto.ClinicId);
-            if (clinicAddress == null || !await IsAddressMatchingClinic(doctorDto.ClinicId, doctorDto.City, doctorDto.State, doctorDto.Country))
+            var clinicAddress = await _clinicRepository.GetClinicAddressAsync(doctorDto.ClinicId);
+            if (clinicAddress == null || !await IsAddressMatchingClinicAsync(doctorDto.ClinicId, doctorDto.City, doctorDto.State, doctorDto.Country))
             {
-                throw new ArgumentException("Address does not match the clinic's address.");
-            }
-
-            // Convert profile picture to byte array
-            byte[] imageBytes = null;
-            if (profilePicture != null && profilePicture.Length > 0)
-            {
-                using (var memoryStream = new MemoryStream())
-                {
-                    await profilePicture.CopyToAsync(memoryStream);
-                    imageBytes = memoryStream.ToArray();
-                }
+                throw new InvalidDoctorAddressException(_messageService.GetMessage("InvalidDoctorAddressException"));
             }
 
             // Map Dto to existing doctor
@@ -224,7 +259,7 @@ namespace CMD.Domain.Managers
             doctor.BriefDescription = doctorDto.Biography;
             doctor.DateOfBirth = doctorDto.DOB;
             doctor.Email = doctorDto.Email;
-            doctor.Gender = doctorDto.Gender;
+            doctor.Gender = gender;
             doctor.ClinicId = doctorDto.ClinicId;
             doctor.DepartmentId = doctorDto.DepartmentId;
             doctor.PhoneNo = doctorDto.Phone;
@@ -242,7 +277,7 @@ namespace CMD.Domain.Managers
             doctor.DoctorAddress.LastModifiedBy = "admin";
             doctor.DoctorAddress.LastModifiedDate = DateTime.Now;
 
-            await _doctorRepository.EditDoctor(doctor);
+            await _doctorRepository.EditDoctorAsync(doctor);
             return doctor;
         }
 
@@ -259,10 +294,10 @@ namespace CMD.Domain.Managers
         /// An object containing the paginated list of doctors along with pagination metadata.
         /// </returns>
         /// <exception cref="ArgumentException">Thrown when the page number or page size is less than or equal to 0.</exception>
-        public async Task<object> GetAllDoctor(List<Doctor> doctors, int page, int pageSize)
+        public async Task<object> GetAllDoctorAsync(List<Doctor> doctors, int page, int pageSize)
         {
-            if (page <= 0) throw new ArgumentException("Invalid page number. Enter greater than 0");
-            if (pageSize <= 0) throw new ArgumentException("Invalid page size. Enter greater than 0");
+            if (page <= 0) throw new InvalidPageNumberException(_messageService.GetMessage("InvalidPageNumberException"));
+            if (pageSize <= 0) throw new InvalidPageSizeException(_messageService.GetMessage("InvalidPageSizeException"));
 
             var schedules = doctors.Skip((page - 1) * pageSize).Take(pageSize).ToList();
             return new
@@ -283,9 +318,9 @@ namespace CMD.Domain.Managers
         /// <param name="state">The state of the address.</param>
         /// <param name="country">The country of the address.</param>
         /// <returns>A boolean indicating if the address matches the clinic's address.</returns>
-        public async Task<bool> IsAddressMatchingClinic(int clinicId, string city, string state, string country)
+        public async Task<bool> IsAddressMatchingClinicAsync(int clinicId, string city, string state, string country)
         {
-            var clinic = await _clinicRepository.GetClinicAddress(clinicId);
+            var clinic = await _clinicRepository.GetClinicAddressAsync(clinicId);
             if (clinic == null)
             {
                 return false;

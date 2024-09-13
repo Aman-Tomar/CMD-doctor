@@ -5,6 +5,7 @@ using CMD.Domain.Repositories;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using CMD.Domain.Managers;
+using CMD.Domain.Services;
 
 namespace CMD.API.Controllers
 {
@@ -15,6 +16,7 @@ namespace CMD.API.Controllers
         private readonly IDoctorScheduleRepository _doctorScheduleRepository;
         private readonly IDoctorRepository _doctorRepository;
         private readonly IDoctorScheduleManager _doctorScheduleManager;
+        private readonly IMessageService _messageService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DoctorScheduleController"/> class.
@@ -22,11 +24,13 @@ namespace CMD.API.Controllers
         /// <param name="doctorScheduleRepository">The repository for interacting with doctor schedule data.</param>
         /// <param name="doctorRepository">The repository for interacting with doctor data.</param>
         /// <param name="doctorScheduleManager">The manager for handling doctor schedule-related business logic.</param>
-        public DoctorScheduleController(IDoctorScheduleRepository doctorScheduleRepository, IDoctorRepository doctorRepository, IDoctorScheduleManager doctorScheduleManager)
+        /// <param name="messageService">The service for providing custom error messages.</param>
+        public DoctorScheduleController(IDoctorScheduleRepository doctorScheduleRepository, IDoctorRepository doctorRepository, IDoctorScheduleManager doctorScheduleManager, IMessageService messageService)
         {
             this._doctorScheduleRepository = doctorScheduleRepository;
             this._doctorRepository = doctorRepository;
             this._doctorScheduleManager = doctorScheduleManager;
+            this._messageService = messageService;
         }
 
         /// <summary>
@@ -56,15 +60,15 @@ namespace CMD.API.Controllers
             }
 
             // Check if doctor exists
-            var doctor = await _doctorRepository.GetDoctorById(doctorId);
+            var doctor = await _doctorRepository.GetDoctorByIdAsync(doctorId);
             if (doctor == null)
             {
-                return NotFound("Doctor Not Found.");
+                return NotFound(_messageService.GetMessage("DoctorNotFound"));
             }
 
             try
             {
-                var doctorSchedule = await _doctorScheduleManager.CreateDoctorSchedule(doctorId, doctorScheduleDto);
+                var doctorSchedule = await _doctorScheduleManager.CreateDoctorScheduleAsync(doctorId, doctorScheduleDto);
                 var locationUri = $"api/DoctorSchedule/{doctorSchedule.DoctorScheduleId}";
                 return Created(locationUri, doctorSchedule);
             }
@@ -102,22 +106,22 @@ namespace CMD.API.Controllers
             }
 
             // Check if doctor exists
-            var doctor = await _doctorRepository.GetDoctorById(doctorScheduleDto.DoctorId);
+            var doctor = await _doctorRepository.GetDoctorByIdAsync(doctorScheduleDto.DoctorId);
             if (doctor == null)
             {
-                return NotFound("Doctor not found");
+                return NotFound(_messageService.GetMessage("DoctorNotFound"));
             }
 
             // Check if doctor schedule exists
-            var existingDoctorSchedule = await _doctorScheduleRepository.GetDoctorScheduleById(doctorScheduleId);
+            var existingDoctorSchedule = await _doctorScheduleRepository.GetDoctorScheduleByIdAsync(doctorScheduleId);
             if (existingDoctorSchedule == null)
             {
-                return NotFound("Doctor schedule not found");
+                return NotFound(_messageService.GetMessage("DoctorScheduleNotFound"));
             }
 
             try
             {
-                var doctorSchedule = await _doctorScheduleManager.EditDoctorSchedule(doctorScheduleDto, existingDoctorSchedule, doctor);
+                var doctorSchedule = await _doctorScheduleManager.EditDoctorScheduleAsync(doctorScheduleDto, existingDoctorSchedule, doctor);
                 return Ok(doctorSchedule);
             }
             catch (Exception ex)
@@ -147,22 +151,22 @@ namespace CMD.API.Controllers
         public async Task<IActionResult> GetDoctorSchedule([FromQuery] int doctorId, [FromQuery] int page = 1, [FromQuery] int pageSize = 10)
         {
             // Check if doctor exists
-            var doctor = await _doctorRepository.GetDoctorById(doctorId);
+            var doctor = await _doctorRepository.GetDoctorByIdAsync(doctorId);
             if (doctor == null)
             {
-                return NotFound("Doctor Not Found");
+                return NotFound(_messageService.GetMessage("DoctorNotFound"));
             }
 
             // Check if doctor has a schedule
-            var doctorSchedules = await _doctorScheduleRepository.GetScheduleByDoctorId(doctorId);
+            var doctorSchedules = await _doctorScheduleRepository.GetScheduleByDoctorIdAsync(doctorId);
             if (doctorSchedules == null || !doctorSchedules.Any())
             {
-                return NotFound("The doctor has no schedule");
+                return NotFound(_messageService.GetMessage("DoctorScheduleNotFound"));
             }
 
             try
             {
-                var doctorSchedule = await _doctorScheduleManager.GetDoctorSchedule(doctorSchedules, page, pageSize);
+                var doctorSchedule = await _doctorScheduleManager.GetDoctorScheduleAsync(doctorSchedules, page, pageSize);
                 return Ok(doctorSchedule);
             }
             catch (Exception ex)

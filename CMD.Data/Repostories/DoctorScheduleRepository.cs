@@ -35,7 +35,7 @@ namespace CMD.Data.Repositories
         /// <returns>
         /// A task representing the asynchronous operation of adding the new doctor schedule.
         /// </returns>
-        public async Task CreateDoctorSchedule(DoctorSchedule doctorSchedule)
+        public async Task CreateDoctorScheduleAsync(DoctorSchedule doctorSchedule)
         {
             _context.DoctorSchedules.Add(doctorSchedule);
             await _context.SaveChangesAsync();
@@ -49,7 +49,7 @@ namespace CMD.Data.Repositories
         /// <returns>
         /// A task representing the asynchronous operation, returning a list of <see cref="DoctorSchedule"/> entities.
         /// </returns>
-        public async Task<List<DoctorSchedule>> GetDoctorScheduleForWeekday(int doctorId, Weekday weekday)
+        public async Task<List<DoctorSchedule>> GetDoctorScheduleForWeekdayAsync(int doctorId, Weekday weekday)
         {
             return await _context.DoctorSchedules
                                  .Where(s => s.DoctorId == doctorId && s.Weekday == weekday)
@@ -63,7 +63,7 @@ namespace CMD.Data.Repositories
         /// <returns>
         /// A task representing the asynchronous operation, returning the <see cref="DoctorSchedule"/> entity if found; otherwise, null.
         /// </returns>
-        public async Task<DoctorSchedule> GetDoctorScheduleById(int doctorScheduleId)
+        public async Task<DoctorSchedule> GetDoctorScheduleByIdAsync(int doctorScheduleId)
         {
             return await _context.DoctorSchedules.FindAsync(doctorScheduleId);
         }
@@ -75,7 +75,7 @@ namespace CMD.Data.Repositories
         /// <returns>
         /// A task representing the asynchronous operation of updating the doctor schedule.
         /// </returns>
-        public async Task UpdateDoctorSchedule(DoctorSchedule doctorSchedule)
+        public async Task UpdateDoctorScheduleAsync(DoctorSchedule doctorSchedule)
         {
             _context.DoctorSchedules.Update(doctorSchedule);
             await _context.SaveChangesAsync();
@@ -88,7 +88,7 @@ namespace CMD.Data.Repositories
         /// <returns>
         /// A task that represents the asynchronous operation. The task result contains a list of <see cref="DoctorSchedule"/> objects associated with the doctor.
         /// </returns>
-        public async Task<List<DoctorSchedule>> GetScheduleByDoctorId(int doctorId)
+        public async Task<List<DoctorSchedule>> GetScheduleByDoctorIdAsync(int doctorId)
         {
             return await _context.DoctorSchedules
                                  .Where(s => s.DoctorId == doctorId)
