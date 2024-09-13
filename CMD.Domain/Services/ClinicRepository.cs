@@ -34,7 +34,7 @@ namespace CMD.Domain.Services
         /// </returns>
         public async Task<bool> IsValidClinicAsync(int clinicId)
         {
-            var response = await _httpClient.GetAsync($"https://localhost:44365/api/Clinic/{clinicId}");
+            var response = await _httpClient.GetAsync($"https://cmd-clinic-api.azurewebsites.net/api/Clinic/{clinicId}");
             return response.IsSuccessStatusCode;
         }
 
@@ -50,7 +50,7 @@ namespace CMD.Domain.Services
         /// </remarks>
         public async Task<ClinicAddressDto> GetClinicAddressAsync(int clinicId)
         {
-            var response = await _httpClient.GetAsync($"https://localhost:44365/api/Clinic/{clinicId}");
+            var response = await _httpClient.GetAsync($"https://cmd-clinic-api.azurewebsites.net/api/Clinic/{clinicId}");
             if (response.IsSuccessStatusCode)
             {
                 var clinic = JsonConvert.DeserializeObject<ClinicDto>(await response.Content.ReadAsStringAsync());

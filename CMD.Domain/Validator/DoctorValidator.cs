@@ -114,6 +114,16 @@ namespace CMD.Domain.Validator
             return true;
         }
 
+        /// <summary>
+        /// Validates the size of the profile picture.
+        /// </summary>
+        /// <param name="profilePicture">The profile picture file to validate.</param>
+        /// <returns>
+        /// <c>true</c> if the file size is valid (less than or equal to 5 MB); otherwise, <c>false</c>.
+        /// </returns>
+        /// <remarks>
+        /// The file size must not exceed 5 megabytes (5 MB).
+        /// </remarks>
         public static bool IsValidImageSize(IFormFile profilePicture)
         {
             // Size validation

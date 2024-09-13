@@ -36,7 +36,7 @@ namespace CMD.Domain.Services
         /// </remarks>
         public async Task<bool> IsValidDepartmentAsync(int departmentId)
         {
-            var response = await _httpClient.GetAsync($"https://localhost:44365/api/Department/{departmentId}");
+            var response = await _httpClient.GetAsync($"https://cmd-clinic-api.azurewebsites.net/api/Department/{departmentId}");
             if (response.IsSuccessStatusCode)
             {
                 return true;
