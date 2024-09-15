@@ -22,6 +22,9 @@ namespace CMD.Test
         private Mock<IMessageService> _messageServiceMock;
         private DoctorScheduleController _controller;
 
+        /// <summary>
+        /// Initializes test objects before each test is run.
+        /// </summary>
         [TestInitialize]
         public void TestInitialize()
         {
@@ -38,6 +41,9 @@ namespace CMD.Test
             );
         }
 
+        /// <summary>
+        /// Tests that the controller returns a BadRequest when the model state is invalid.
+        /// </summary>
         [TestMethod]
         public async Task AddDoctorSchedule_ShouldReturnBadRequest_WhenModelStateIsInvalid()
         {
@@ -51,6 +57,9 @@ namespace CMD.Test
             Assert.IsInstanceOfType(result, typeof(BadRequestObjectResult));
         }
 
+        /// <summary>
+        /// Tests that the controller returns a NotFound when the doctor is not found.
+        /// </summary>
         [TestMethod]
         public async Task AddDoctorSchedule_ShouldReturnNotFound_WhenDoctorNotFound()
         {
@@ -68,6 +77,9 @@ namespace CMD.Test
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
         }
 
+        /// <summary>
+        /// Tests that the controller returns a Created result when the doctor schedule is created successfully.
+        /// </summary>
         [TestMethod]
         public async Task AddDoctorSchedule_ShouldReturnCreated_WhenDoctorScheduleCreatedSuccessfully()
         {
@@ -90,6 +102,9 @@ namespace CMD.Test
             Assert.AreEqual($"api/DoctorSchedule/{doctorSchedule.DoctorScheduleId}", createdResult.Location);
         }
 
+        /// <summary>
+        /// Tests that the controller returns a NotFound when the doctor is not found during an edit operation.
+        /// </summary>
         [TestMethod]
         public async Task EditDoctorSchedule_ShouldReturnNotFound_WhenDoctorNotFound()
         {
@@ -107,6 +122,9 @@ namespace CMD.Test
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
         }
 
+        /// <summary>
+        /// Tests that the controller returns a NotFound when the doctor schedule is not found during an edit operation.
+        /// </summary>
         [TestMethod]
         public async Task EditDoctorSchedule_ShouldReturnNotFound_WhenDoctorScheduleNotFound()
         {
@@ -129,6 +147,9 @@ namespace CMD.Test
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
         }
 
+        /// <summary>
+        /// Tests that the controller returns an Ok result when the doctor schedule is updated successfully.
+        /// </summary>
         [TestMethod]
         public async Task EditDoctorSchedule_ShouldReturnOk_WhenDoctorScheduleUpdatedSuccessfully()
         {
@@ -152,6 +173,9 @@ namespace CMD.Test
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
         }
 
+        /// <summary>
+        /// Tests that the controller returns a NotFound when the doctor is not found during a get operation.
+        /// </summary>
         [TestMethod]
         public async Task GetDoctorSchedule_ShouldReturnNotFound_WhenDoctorNotFound()
         {
@@ -169,6 +193,9 @@ namespace CMD.Test
             Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
         }
 
+        /// <summary>
+        /// Tests that the controller returns an Ok result when the doctor schedule is found.
+        /// </summary>
         [TestMethod]
         public async Task GetDoctorSchedule_ShouldReturnOk_WhenDoctorScheduleFound()
         {

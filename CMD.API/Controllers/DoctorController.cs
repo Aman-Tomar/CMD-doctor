@@ -4,6 +4,7 @@ using CMD.Domain.Managers;
 using CMD.Domain.Repositories;
 using CMD.Domain.Services;
 using Microsoft.AspNetCore.Mvc;
+using NLog;
 
 namespace CMD.API.Controllers
 {
@@ -11,6 +12,8 @@ namespace CMD.API.Controllers
     [ApiController]
     public class DoctorController : ControllerBase
     {
+        private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
+
         private readonly IDoctorRepository _doctorRepository;
         private readonly IDoctorManager _doctorManager;
         private readonly IMessageService _messageService;
@@ -44,6 +47,7 @@ namespace CMD.API.Controllers
             // Check if all the properties are provided
             if (!ModelState.IsValid)
             {
+                _logger.Warn("Model state is invalid");
                 return BadRequest(ModelState);
             }
 
@@ -51,11 +55,13 @@ namespace CMD.API.Controllers
             {
                 var doctor = await _doctorManager.AddDoctorAsync(doctorDto);
                 var locationUri = $"api/Doctor/{doctor.DoctorId}";
+                _logger.Info($"Doctor added successfully. ID: {doctor.DoctorId}");
                 return Created(locationUri, doctor);
             }
             catch (Exception ex)
             {
-                return BadRequest(ex);
+                _logger.Error(ex, "Error occurred while adding doctor");
+                return BadRequest(ex.Message);
             }
         }
 
@@ -78,6 +84,7 @@ namespace CMD.API.Controllers
             // Check if all the properties are provided
             if (!ModelState.IsValid)
             {
+                _logger.Warn("Model state is invalid");
                 return BadRequest();
             }
 
@@ -85,21 +92,24 @@ namespace CMD.API.Controllers
             var existingDoctor = await _doctorRepository.GetDoctorByIdAsync(doctorId);
             if (existingDoctor == null)
             {
+                _logger.Warn($"Doctor not found. ID: {doctorId}");
                 return NotFound(_messageService.GetMessage("DoctorNotFound"));
             }
 
             try
             {
                 var doctor = await _doctorManager.EditDoctorAsync(existingDoctor, doctorDto);
+                _logger.Info($"Doctor updated successfully. ID: {doctor.DoctorId}");
                 return Ok(doctor);
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "Error occurred while updating doctor");
                 return BadRequest(ex.Message);
             }
         }
 
-        /// <summary>s
+        /// <summary>
         /// Retrieves a paginated list of all doctors.
         /// </summary>
         /// <param name="page">The page number to retrieve (default is 1).</param>
@@ -116,15 +126,18 @@ namespace CMD.API.Controllers
             var doctors = await _doctorRepository.GetAllDoctorsAsync();
             if (doctors == null || doctors.Count == 0)
             {
+                _logger.Warn("No doctors found");
                 return NotFound(_messageService.GetMessage("DoctorNotFound"));
             }
             try
             {
                 var doctorSchedule = await _doctorManager.GetAllDoctorAsync(doctors, page, pageSize);
+                _logger.Info("Retrieved paginated list of doctors");
                 return Ok(doctorSchedule);
             }
             catch (Exception ex)
             {
+                _logger.Error(ex, "Error occurred while retrieving doctors");
                 return BadRequest(ex.Message);
             }
         }
@@ -136,7 +149,6 @@ namespace CMD.API.Controllers
         /// <returns>An <see cref="IActionResult"/> containing the details of the doctor.</returns>
         /// <response code="200">Successfully retrieved the doctor.</response>
         /// <response code="404">Doctor not found.</response>
-        /// .../api/Doctor/1234
         [HttpGet("{doctorId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -145,9 +157,11 @@ namespace CMD.API.Controllers
             var doctor = await _doctorRepository.GetDoctorByIdAsync(doctorId);
             if (doctor == null)
             {
+                _logger.Warn($"Doctor not found. ID: {doctorId}");
                 return NotFound(_messageService.GetMessage("DoctorNotFound"));
             }
 
+            _logger.Info($"Doctor retrieved successfully. ID: {doctorId}");
             return Ok(doctor);
         }
     }

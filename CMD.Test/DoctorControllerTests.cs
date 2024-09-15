@@ -20,6 +20,9 @@ namespace CMD.Test
         private Mock<IMessageService> _messageServiceMock;
         private DoctorController _controller;
 
+        /// <summary>
+        /// Initializes the test dependencies and controller before each test case.
+        /// </summary>
         [TestInitialize]
         public void Setup()
         {
@@ -32,6 +35,9 @@ namespace CMD.Test
                 _messageServiceMock.Object);
         }
 
+        /// <summary>
+        /// Tests that a valid doctor is successfully added and returns a 201 Created result.
+        /// </summary>
         [TestMethod]
         public async Task AddDoctor_ValidDoctor_ReturnsCreatedAtActionResult()
         {
@@ -53,6 +59,9 @@ namespace CMD.Test
             Assert.AreEqual($"api/Doctor/{createdDoctor.DoctorId}", actionResult.Location);
         }
 
+        /// <summary>
+        /// Tests that a doctor with an invalid model state returns a 400 Bad Request result.
+        /// </summary>
         [TestMethod]
         public async Task AddDoctor_InvalidModelState_ReturnsBadRequest()
         {
@@ -68,6 +77,9 @@ namespace CMD.Test
             Assert.AreEqual(400, actionResult.StatusCode);
         }
 
+        /// <summary>
+        /// Tests that editing an existing doctor returns a 200 OK result.
+        /// </summary>
         [TestMethod]
         public async Task EditDoctor_ValidDoctor_ReturnsOkResult()
         {
@@ -94,6 +106,9 @@ namespace CMD.Test
             Assert.AreEqual(200, actionResult.StatusCode);
         }
 
+        /// <summary>
+        /// Tests that trying to edit a doctor that doesn't exist returns a 404 Not Found result.
+        /// </summary>
         [TestMethod]
         public async Task EditDoctor_DoctorNotFound_ReturnsNotFound()
         {
@@ -119,6 +134,9 @@ namespace CMD.Test
             Assert.AreEqual("Doctor not found", actionResult.Value);
         }
 
+        /// <summary>
+        /// Tests that retrieving all doctors returns a 200 OK result when doctors are found.
+        /// </summary>
         [TestMethod]
         public async Task GetAllDoctors_DoctorsFound_ReturnsOkResult()
         {
@@ -142,6 +160,9 @@ namespace CMD.Test
             Assert.AreEqual(200, actionResult.StatusCode);
         }
 
+        /// <summary>
+        /// Tests that retrieving all doctors returns a 404 Not Found result when no doctors are found.
+        /// </summary>
         [TestMethod]
         public async Task GetAllDoctors_NoDoctorsFound_ReturnsNotFound()
         {
@@ -164,6 +185,9 @@ namespace CMD.Test
             Assert.AreEqual("No doctors found", actionResult.Value);
         }
 
+        /// <summary>
+        /// Tests that retrieving a doctor by ID returns a 200 OK result when the doctor is found.
+        /// </summary>
         [TestMethod]
         public async Task GetDoctorById_DoctorFound_ReturnsOkResult()
         {
@@ -184,6 +208,9 @@ namespace CMD.Test
             Assert.AreEqual(200, actionResult.StatusCode);
         }
 
+        /// <summary>
+        /// Tests that retrieving a doctor by ID returns a 404 Not Found result when the doctor is not found.
+        /// </summary>
         [TestMethod]
         public async Task GetDoctorById_DoctorNotFound_ReturnsNotFound()
         {

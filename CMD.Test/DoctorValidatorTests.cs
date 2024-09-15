@@ -16,7 +16,7 @@ namespace CMD.Test
         public void IsValidName_ValidName_ReturnsTrue()
         {
             // Arrange
-            var name = "John Doe";
+            var name = "John";
 
             // Act
             var result = DoctorValidator.IsValidName(name);

@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using CMD.Domain.Entities;
 using CMD.Domain.Enums;
@@ -11,7 +9,7 @@ namespace CMD.Domain.Repositories
     /// <summary>
     /// Provides an abstraction for accessing and managing doctor schedules.
     /// This interface defines the contract for CRUD operations related to doctor schedules,
-    /// such as creating, retrieving, updating, and retrieving schedules by doctor or weekday.
+    /// such as creating, retrieving, updating, and checking the existence of schedules.
     /// </summary>
     public interface IDoctorScheduleRepository
     {
@@ -64,6 +62,24 @@ namespace CMD.Domain.Repositories
         /// </returns>
         Task<List<DoctorSchedule>> GetScheduleByDoctorIdAsync(int doctorId);
 
+        /// <summary>
+        /// Asynchronously retrieves a list of all doctor schedules.
+        /// </summary>
+        /// <returns>
+        /// A Task representing the asynchronous operation, returning a list of all <see cref="DoctorSchedule"/> entities in the system.
+        /// </returns>
         Task<List<DoctorSchedule>> GetAllSchedulesAsync();
+
+        /// <summary>
+        /// Asynchronously checks if a doctor schedule exists based on doctor ID, date, and time range.
+        /// </summary>
+        /// <param name="doctorId">The unique identifier of the doctor.</param>
+        /// <param name="date">The date for which the schedule is being checked.</param>
+        /// <param name="startTime">The start time of the schedule.</param>
+        /// <param name="endTime">The end time of the schedule.</param>
+        /// <returns>
+        /// A Task representing the asynchronous operation, returning true if a schedule exists, otherwise false.
+        /// </returns>
+        Task<bool> DoesScheduleExistAsync(int doctorId, DateOnly date, TimeOnly startTime, TimeOnly endTime);
     }
 }

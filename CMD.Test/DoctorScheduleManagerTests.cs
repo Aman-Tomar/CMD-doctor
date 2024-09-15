@@ -32,6 +32,9 @@ namespace CMD.Test
             _doctorScheduleManager = new DoctorScheduleManager(_mockDoctorScheduleRepository.Object, _mockDoctorRepository.Object, _mockMessageService.Object);
         }
 
+        /// <summary>
+        /// Tests that a valid doctor schedule creation returns a DoctorSchedule object.
+        /// </summary>
         [TestMethod]
         public async Task CreateDoctorScheduleAsync_ValidInput_ShouldReturnDoctorSchedule()
         {
@@ -65,6 +68,9 @@ namespace CMD.Test
             Assert.AreEqual(TimeOnly.Parse("17:00"), result.EndTime);
         }
 
+        /// <summary>
+        /// Tests that creating a doctor schedule with an invalid weekday throws an InvalidWeekdayException.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(InvalidWeekdayException))]
         public async Task CreateDoctorScheduleAsync_InvalidWeekday_ShouldThrowInvalidWeekdayException()
@@ -88,6 +94,9 @@ namespace CMD.Test
             // Assert: Exception is expected
         }
 
+        /// <summary>
+        /// Tests that creating a doctor schedule with an invalid time range throws an InvalidTimeException.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(InvalidTimeException))]
         public async Task CreateDoctorScheduleAsync_InvalidTime_ShouldThrowInvalidTimeException()
@@ -113,6 +122,9 @@ namespace CMD.Test
             // Assert: Exception is expected
         }
 
+        /// <summary>
+        /// Tests that creating a doctor schedule when the doctor is not available throws an InvalidDoctorScheduleException.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(InvalidDoctorScheduleException))]
         public async Task CreateDoctorScheduleAsync_DoctorNotAvailable_ShouldThrowInvalidDoctorScheduleException()
@@ -147,6 +159,9 @@ namespace CMD.Test
             // Assert: Exception is expected
         }
 
+        /// <summary>
+        /// Tests that the schedule time validity check correctly identifies an invalid time range.
+        /// </summary>
         [TestMethod]
         public async Task IsScheduleTimeValidAsync_ValidTime_ShouldReturnFalse()
         {
@@ -157,6 +172,9 @@ namespace CMD.Test
             Assert.IsFalse(result);
         }
 
+        /// <summary>
+        /// Tests that retrieving doctor schedules returns a paginated result.
+        /// </summary>
         [TestMethod]
         public async Task GetDoctorScheduleAsync_ValidInput_ShouldReturnPaginatedResult()
         {

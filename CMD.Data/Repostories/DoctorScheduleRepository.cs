@@ -25,7 +25,7 @@ namespace CMD.Data.Repositories
         /// <param name="context">The <see cref="DoctorDbContext"/> instance for interacting with the database.</param>
         public DoctorScheduleRepository(DoctorDbContext context)
         {
-            this._context = context;
+            _context = context;
         }
 
         /// <summary>
@@ -45,7 +45,7 @@ namespace CMD.Data.Repositories
         /// Asynchronously retrieves doctor schedules for a specific doctor on a given weekday.
         /// </summary>
         /// <param name="doctorId">The unique identifier of the doctor whose schedule is being retrieved.</param>
-        /// <param name="weekday">The specific weekday (e.g., "Monday") for which the schedule is required.</param>
+        /// <param name="weekday">The specific weekday for which the schedule is required.</param>
         /// <returns>
         /// A task representing the asynchronous operation, returning a list of <see cref="DoctorSchedule"/> entities.
         /// </returns>
@@ -95,9 +95,34 @@ namespace CMD.Data.Repositories
                                  .ToListAsync();
         }
 
+        /// <summary>
+        /// Asynchronously retrieves all doctor schedules stored in the database.
+        /// </summary>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains a list of all <see cref="DoctorSchedule"/> objects.
+        /// </returns>
         public async Task<List<DoctorSchedule>> GetAllSchedulesAsync()
         {
             return await _context.DoctorSchedules.ToListAsync();
+        }
+
+        /// <summary>
+        /// Asynchronously checks if a doctor schedule exists for a specific doctor on a given date and within a specified time range.
+        /// </summary>
+        /// <param name="doctorId">The unique identifier of the doctor whose schedule is being checked.</param>
+        /// <param name="date">The specific date for which the schedule is being checked.</param>
+        /// <param name="startTime">The start time of the schedule to check.</param>
+        /// <param name="endTime">The end time of the schedule to check.</param>
+        /// <returns>
+        /// A task that represents the asynchronous operation. The task result contains a boolean value indicating whether the schedule exists.
+        /// </returns>
+        public async Task<bool> DoesScheduleExistAsync(int doctorId, DateOnly date, TimeOnly startTime, TimeOnly endTime)
+        {
+            return await _context.DoctorSchedules
+                .AnyAsync(s => s.DoctorId == doctorId
+                            && s.Weekday == (Weekday)date.DayOfWeek
+                            && s.StartTime < startTime
+                            && s.EndTime > endTime);
         }
     }
 }

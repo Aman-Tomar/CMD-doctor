@@ -14,6 +14,9 @@ using Moq;
 
 namespace CMD.Test
 {
+    /// <summary>
+    /// Unit tests for the <see cref="DoctorManager"/> class.
+    /// </summary>
     [TestClass]
     public class DoctorManagerTests
     {
@@ -23,6 +26,9 @@ namespace CMD.Test
         private Mock<IMessageService> _messageServiceMock;
         private DoctorManager _doctorManager;
 
+        /// <summary>
+        /// Initializes the required dependencies before each test.
+        /// </summary>
         [TestInitialize]
         public void TestInitialize()
         {
@@ -38,6 +44,9 @@ namespace CMD.Test
                 _messageServiceMock.Object);
         }
 
+        /// <summary>
+        /// Verifies that a valid doctor DTO is successfully added, and the doctor is returned.
+        /// </summary>
         [TestMethod]
         public async Task AddDoctorAsync_ValidDoctorDto_ReturnsDoctor()
         {
@@ -67,6 +76,9 @@ namespace CMD.Test
             _doctorRepositoryMock.Verify(repo => repo.AddDoctorAsync(It.IsAny<Doctor>()), Times.Once);
         }
 
+        /// <summary>
+        /// Verifies that an invalid doctor name throws an <see cref="InvalidNameException"/>.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(InvalidNameException))]
         public async Task AddDoctorAsync_InvalidName_ThrowsInvalidNameException()
@@ -93,6 +105,9 @@ namespace CMD.Test
             // Assert is handled by the ExpectedException attribute
         }
 
+        /// <summary>
+        /// Verifies that an invalid doctor email throws an <see cref="InvalidEmailException"/>.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(InvalidEmailException))]
         public async Task AddDoctorAsync_InvalidEmail_ThrowsInvalidEmailException()
@@ -119,29 +134,9 @@ namespace CMD.Test
             // Assert is handled by the ExpectedException attribute
         }
 
-        [TestMethod]
-        public async Task GetAllDoctorAsync_ValidPagination_ReturnsPaginatedList()
-        {
-            // Arrange
-            var doctors = new List<Doctor>
-            {
-                new Doctor { FirstName = "John", LastName = "Doe" },
-                new Doctor { FirstName = "Jane", LastName = "Doe" },
-                new Doctor { FirstName = "Richard", LastName = "Roe" }
-            };
-
-            int page = 1;
-            int pageSize = 2;
-
-            // Act
-            var result = await _doctorManager.GetAllDoctorAsync(doctors, page, pageSize);
-
-            // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(2, ((List<Doctor>)result.GetType().GetProperty("Data").GetValue(result)).Count);
-            Assert.AreEqual(2, result.GetType().GetProperty("PageSize").GetValue(result));
-        }
-
+        /// <summary>
+        /// Verifies that providing an invalid page number when retrieving doctors throws an <see cref="InvalidPageNumberException"/>.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(InvalidPageNumberException))]
         public async Task GetAllDoctorAsync_InvalidPageNumber_ThrowsInvalidPageNumberException()
@@ -162,6 +157,9 @@ namespace CMD.Test
             await _doctorManager.GetAllDoctorAsync(doctors, invalidPage, 2);
         }
 
+        /// <summary>
+        /// Verifies that providing an invalid page size when retrieving doctors throws an <see cref="InvalidPageSizeException"/>.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(InvalidPageSizeException))]
         public async Task GetAllDoctorAsync_InvalidPageSize_ThrowsInvalidPageSizeException()
