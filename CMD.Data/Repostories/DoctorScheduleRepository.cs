@@ -94,5 +94,10 @@ namespace CMD.Data.Repositories
                                  .Where(s => s.DoctorId == doctorId)
                                  .ToListAsync();
         }
+
+        public async Task<List<DoctorSchedule>> GetAllSchedulesAsync()
+        {
+            return await _context.DoctorSchedules.ToListAsync();
+        }
     }
 }

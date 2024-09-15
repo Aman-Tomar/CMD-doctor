@@ -63,5 +63,7 @@ namespace CMD.Domain.Repositories
         /// objects associated with the doctor. If no schedules are found, the result will be an empty list.
         /// </returns>
         Task<List<DoctorSchedule>> GetScheduleByDoctorIdAsync(int doctorId);
+
+        Task<List<DoctorSchedule>> GetAllSchedulesAsync();
     }
 }
