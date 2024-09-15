@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,7 +32,6 @@ namespace CMD.Domain.Entities
         [Required(ErrorMessage = "Specialization field is mandatory.")]
         [StringLength(100, ErrorMessage = "Specialization must be less than 100 characters.")]
         public string Specialization { get; set; }
-
         public byte[]? ProfilePicture { get; set; }
 
         [StringLength(500, ErrorMessage = "Brief description must be less than 500 characters.")]
@@ -44,6 +44,7 @@ namespace CMD.Domain.Entities
         public DateTime DateOfBirth { get; set; }
 
         [Required(ErrorMessage = "Gender field is mandatory.")]
+        [Column(TypeName = "nvarchar(50)")]
         public Gender Gender { get; set; }
 
         [StringLength(100, ErrorMessage = "Qualification must be less than 100 characters.")]

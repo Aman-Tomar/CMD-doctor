@@ -39,7 +39,9 @@ namespace CMD.Data.Repostories
         /// <returns>A task that represents the asynchronous operation. The task result contains the <see cref="Doctor"/> entity.</returns>
         public async Task<Doctor> GetDoctorByIdAsync(int doctorId)
         {
-            return await _context.Doctors.FindAsync(doctorId);
+            return await _context.Doctors
+                                 .Include(d => d.DoctorAddress)
+                                 .FirstOrDefaultAsync(d => d.DoctorId == doctorId);
         }
 
         /// <summary>

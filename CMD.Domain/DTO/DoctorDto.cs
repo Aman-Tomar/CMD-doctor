@@ -38,7 +38,7 @@ namespace CMD.Domain.DTO
         [StringLength(200, ErrorMessage = "Number of characters must be less than 200.")]
         public string Biography { get; set; }
         [Required(ErrorMessage = "Phone field is mandatory.")]
-        public string Phone { get; set; }
+        public string PhoneNo { get; set; }
         [Required(ErrorMessage = "Status field is mandatory.")]
         public bool Status { get; set; }
         [Required(ErrorMessage = "Specialization field is mandatory.")]

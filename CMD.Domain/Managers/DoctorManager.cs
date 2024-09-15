@@ -76,7 +76,7 @@ namespace CMD.Domain.Managers
             }
 
             // Validate Phone Number
-            if (!DoctorValidator.IsValidPhoneNumber(doctorDto.Phone))
+            if (!DoctorValidator.IsValidPhoneNumber(doctorDto.PhoneNo))
             {
                 throw new InvalidPhoneNumberException(_messageService.GetMessage("InvalidPhoneNumberException"));
             }
@@ -89,7 +89,7 @@ namespace CMD.Domain.Managers
                 {
                     throw new InvalidImageTypeException(_messageService.GetMessage("InvalidImageTypeException"));
                 }
-                else if (!DoctorValidator.IsValidImage(doctorDto.profilePicture))
+                else if (!DoctorValidator.IsValidImageSize(doctorDto.profilePicture))
                 {
                     throw new ImageFileSizeExceededException(_messageService.GetMessage("ImageFileSizeExceededException"));
                 }
@@ -140,7 +140,7 @@ namespace CMD.Domain.Managers
                 Specialization = doctorDto.Specialization,
                 ClinicId = doctorDto.ClinicId,
                 DepartmentId = doctorDto.DepartmentId,
-                PhoneNo = doctorDto.Phone,
+                PhoneNo = doctorDto.PhoneNo,
                 ProfilePicture = imageBytes,
                 CreatedAt = DateTime.Now,
                 CreatedBy = "admin",
@@ -203,7 +203,7 @@ namespace CMD.Domain.Managers
             }
 
             // Validate Phone Number
-            if (!DoctorValidator.IsValidPhoneNumber(doctorDto.Phone))
+            if (!DoctorValidator.IsValidPhoneNumber(doctorDto.PhoneNo))
             {
                 throw new InvalidPhoneNumberException(_messageService.GetMessage("InvalidPhoneNumberException"));
             }
@@ -216,7 +216,7 @@ namespace CMD.Domain.Managers
                 {
                     throw new InvalidImageTypeException(_messageService.GetMessage("InvalidImageTypeException"));
                 }
-                else if (!DoctorValidator.IsValidImage(doctorDto.profilePicture))
+                else if (!DoctorValidator.IsValidImageSize(doctorDto.profilePicture))
                 {
                     throw new ImageFileSizeExceededException(_messageService.GetMessage("ImageFileSizeExceededException"));
                 }
@@ -262,7 +262,7 @@ namespace CMD.Domain.Managers
             doctor.Gender = gender;
             doctor.ClinicId = doctorDto.ClinicId;
             doctor.DepartmentId = doctorDto.DepartmentId;
-            doctor.PhoneNo = doctorDto.Phone;
+            doctor.PhoneNo = doctorDto.PhoneNo;
             doctor.Status = doctorDto.Status;
             doctor.ProfilePicture = imageBytes;
             doctor.Specialization = doctorDto.Specialization;
@@ -300,6 +300,32 @@ namespace CMD.Domain.Managers
             if (pageSize <= 0) throw new InvalidPageSizeException(_messageService.GetMessage("InvalidPageSizeException"));
 
             var schedules = doctors.Skip((page - 1) * pageSize).Take(pageSize).ToList();
+
+            // Map Doctor to DoctorDto
+            var doctorDtos = schedules.Select(doctor => new DoctorDto
+            {
+                FirstName = doctor.FirstName,
+                LastName = doctor.LastName,
+                DOB = doctor.DateOfBirth,
+                Email = doctor.Email,
+                Gender = doctor.Gender.ToString(),
+                Address = doctor.DoctorAddress.Street,
+                Country = doctor.DoctorAddress.Country,
+                City = doctor.DoctorAddress.City,
+                ZipCode = doctor.DoctorAddress.ZipCode,
+                State = doctor.DoctorAddress.State,
+                Biography = doctor.BriefDescription,
+                PhoneNo = doctor.PhoneNo,
+                Status = doctor.Status,
+                Specialization = doctor.Specialization,
+                ExperienceInYears = doctor.ExperienceInYears,
+                Qualification = doctor.Qualification,
+                DepartmentId = doctor.DepartmentId,
+                ClinicId = doctor.ClinicId,
+                profilePicture = null 
+            }).ToList();
+
+
             return new
             {
                 Page = page,

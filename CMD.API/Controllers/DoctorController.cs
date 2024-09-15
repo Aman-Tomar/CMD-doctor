@@ -73,7 +73,7 @@ namespace CMD.API.Controllers
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public async Task<IActionResult> EditDoctor([FromQuery] int doctorId, [FromForm] DoctorDto doctorDto, [FromForm] IFormFile profilePicture)
+        public async Task<IActionResult> EditDoctor([FromQuery] int doctorId, [FromForm] DoctorDto doctorDto)
         {
             // Check if all the properties are provided
             if (!ModelState.IsValid)
@@ -99,7 +99,7 @@ namespace CMD.API.Controllers
             }
         }
 
-        /// <summary>
+        /// <summary>s
         /// Retrieves a paginated list of all doctors.
         /// </summary>
         /// <param name="page">The page number to retrieve (default is 1).</param>

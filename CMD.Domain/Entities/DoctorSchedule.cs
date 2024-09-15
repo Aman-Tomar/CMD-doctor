@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,6 +16,7 @@ namespace CMD.Domain.Entities
         [Required(ErrorMessage = "ClinicId field is mandatory.")]
         public int ClinicId { get; set; }
         [Required(ErrorMessage = "Weeday field is mandatory.")]
+        [Column(TypeName = "nvarchar(50)")]
         public Weekday Weekday { get; set; }
         [Required(ErrorMessage = "StartTime field is mandatory.")]
         public TimeOnly StartTime { get; set; }

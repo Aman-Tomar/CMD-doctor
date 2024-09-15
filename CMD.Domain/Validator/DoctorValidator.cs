@@ -26,7 +26,7 @@ namespace CMD.Domain.Validator
                 return false;
 
             // Ensure no numbers or special characters, no spaces at start or end
-            return Regex.IsMatch(name, @"^[A-Za-z]+(?: [A-Za-z]+)*$");
+            return Regex.IsMatch(name, @"^[A-Za-z]+$");
         }
 
         /// <summary>

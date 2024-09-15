@@ -159,7 +159,7 @@ namespace CMD.API.Controllers
 
             // Check if doctor has a schedule
             var doctorSchedules = await _doctorScheduleRepository.GetScheduleByDoctorIdAsync(doctorId);
-            if (doctorSchedules == null || !doctorSchedules.Any())
+            if (doctorSchedules == null || doctorSchedules.Count == 0)
             {
                 return NotFound(_messageService.GetMessage("DoctorScheduleNotFound"));
             }
@@ -173,6 +173,21 @@ namespace CMD.API.Controllers
             {
                 return BadRequest(ex.Message);
             }
+        }
+
+        [HttpGet("{doctorScheduleId:int}")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetScheduleByDoctorScheduleId(int doctorScheduleId)
+        {
+            // Check if schedule exists
+            var doctorSchedule = await _doctorScheduleRepository.GetDoctorScheduleByIdAsync(doctorScheduleId);
+            if (doctorSchedule == null)
+            {
+                return NotFound(_messageService.GetMessage("DoctorScheduleNotFound"));
+            }
+
+            return Ok(doctorSchedule);
         }
     }
 }
