@@ -264,7 +264,7 @@ namespace CMD.Domain.Managers
             doctor.DepartmentId = doctorDto.DepartmentId;
             doctor.PhoneNo = doctorDto.PhoneNo;
             doctor.Status = doctorDto.Status;
-            doctor.ProfilePicture = imageBytes;
+            doctor.ProfilePicture = imageBytes ?? doctor.ProfilePicture;
             doctor.Specialization = doctorDto.Specialization;
             doctor.Qualification = doctorDto.Qualification;
             doctor.ExperienceInYears = doctorDto.ExperienceInYears;

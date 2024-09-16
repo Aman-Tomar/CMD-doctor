@@ -218,5 +218,125 @@ namespace CMD.Test
             // Assert
             Assert.IsInstanceOfType(result, typeof(OkObjectResult));
         }
+        /// <summary>
+        /// Tests that the controller returns NotFound when a doctor schedule is not found by ID.
+        /// </summary>
+        [TestMethod]
+        public async Task GetScheduleByDoctorScheduleId_ShouldReturnNotFound_WhenDoctorScheduleNotFound()
+        {
+            // Arrange
+            _doctorScheduleRepositoryMock.Setup(repo => repo.GetDoctorScheduleByIdAsync(It.IsAny<int>()))
+                .ReturnsAsync((DoctorSchedule)null);
+
+            _messageServiceMock.Setup(service => service.GetMessage("DoctorScheduleNotFound"))
+                .Returns("Doctor schedule not found");
+
+            // Act
+            var result = await _controller.GetScheduleByDoctorScheduleId(1);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
+        }
+
+        /// <summary>
+        /// Tests that the controller returns Ok when a doctor schedule is found by ID.
+        /// </summary>
+        [TestMethod]
+        public async Task GetScheduleByDoctorScheduleId_ShouldReturnOk_WhenDoctorScheduleFound()
+        {
+            // Arrange
+            var doctorSchedule = new DoctorSchedule { DoctorScheduleId = 1 };
+            _doctorScheduleRepositoryMock.Setup(repo => repo.GetDoctorScheduleByIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(doctorSchedule);
+
+            // Act
+            var result = await _controller.GetScheduleByDoctorScheduleId(1);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
+        /// <summary>
+        /// Tests that the controller returns NotFound when no doctor schedules are found for pagination.
+        /// </summary>
+        [TestMethod]
+        public async Task GetAllSchedules_ShouldReturnNotFound_WhenNoDoctorSchedulesFound()
+        {
+            // Arrange
+            _doctorScheduleRepositoryMock.Setup(repo => repo.GetAllSchedulesAsync())
+                .ReturnsAsync(new List<DoctorSchedule>());
+
+            _messageServiceMock.Setup(service => service.GetMessage("DoctorScheduleNotFound"))
+                .Returns("Doctor schedule not found");
+
+            // Act
+            var result = await _controller.GetAllSchedules(1, 10);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
+        }
+
+        /// <summary>
+        /// Tests that the controller returns Ok when doctor schedules are successfully retrieved with pagination.
+        /// </summary>
+        [TestMethod]
+        public async Task GetAllSchedules_ShouldReturnOk_WhenDoctorSchedulesFound()
+        {
+            // Arrange
+            var doctorSchedules = new List<DoctorSchedule> { new DoctorSchedule { DoctorScheduleId = 1 } };
+            _doctorScheduleRepositoryMock.Setup(repo => repo.GetAllSchedulesAsync())
+                .ReturnsAsync(doctorSchedules);
+
+            _doctorScheduleManagerMock.Setup(manager => manager.GetDoctorScheduleAsync(It.IsAny<List<DoctorSchedule>>(), It.IsAny<int>(), It.IsAny<int>()))
+                .ReturnsAsync(doctorSchedules);
+
+            // Act
+            var result = await _controller.GetAllSchedules(1, 10);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
+        /// <summary>
+        /// Tests that the controller returns NotFound when a doctor is not found during schedule check.
+        /// </summary>
+        [TestMethod]
+        public async Task CheckDoctorSchedule_ShouldReturnNotFound_WhenDoctorNotFound()
+        {
+            // Arrange
+            _doctorRepositoryMock.Setup(repo => repo.GetDoctorByIdAsync(It.IsAny<int>()))
+                .ReturnsAsync((Doctor)null);
+
+            _messageServiceMock.Setup(service => service.GetMessage("DoctorNotFound"))
+                .Returns("Doctor not found");
+
+            // Act
+            var result = await _controller.CheckDoctorSchedule(1, DateOnly.FromDateTime(DateTime.Now), TimeOnly.MinValue, TimeOnly.MaxValue);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(NotFoundObjectResult));
+        }
+
+        /// <summary>
+        /// Tests that the controller returns Ok when the doctor's schedule exists on a specific date.
+        /// </summary>
+        [TestMethod]
+        public async Task CheckDoctorSchedule_ShouldReturnOk_WhenScheduleExists()
+        {
+            // Arrange
+            var doctor = new Doctor { DoctorId = 1 };
+            _doctorRepositoryMock.Setup(repo => repo.GetDoctorByIdAsync(It.IsAny<int>()))
+                .ReturnsAsync(doctor);
+
+            _doctorScheduleRepositoryMock.Setup(repo => repo.DoesScheduleExistAsync(It.IsAny<int>(), It.IsAny<DateOnly>(), It.IsAny<TimeOnly>(), It.IsAny<TimeOnly>()))
+                .ReturnsAsync(true);
+
+            // Act
+            var result = await _controller.CheckDoctorSchedule(1, DateOnly.FromDateTime(DateTime.Now), TimeOnly.MinValue, TimeOnly.MaxValue);
+
+            // Assert
+            Assert.IsInstanceOfType(result, typeof(OkObjectResult));
+        }
+
     }
 }

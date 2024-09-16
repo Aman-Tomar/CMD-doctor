@@ -3,6 +3,7 @@ using CMD.Domain.Entities;
 using CMD.Domain.Managers;
 using CMD.Domain.Repositories;
 using CMD.Domain.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
 
@@ -10,6 +11,7 @@ namespace CMD.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class DoctorController : ControllerBase
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -38,6 +40,7 @@ namespace CMD.API.Controllers
         /// <returns>An <see cref="IActionResult"/> representing the result of the operation.</returns>
         /// <response code="201">Doctor successfully created.</response>
         /// <response code="400">Bad request if the model state is invalid or an error occurs.</response>
+        // [Authorize(Roles = "Doctor, Admin")]
         [HttpPost]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -74,6 +77,7 @@ namespace CMD.API.Controllers
         /// <response code="200">Doctor successfully updated.</response>
         /// <response code="404">Doctor not found.</response>
         /// <response code="400">Bad request if the model state is invalid or an error occurs.</response>
+        // [Authorize(Roles = "Doctor, Admin")]
         [HttpPut]
         [Consumes("multipart/form-data")]
         [ProducesResponseType(StatusCodes.Status200OK)]
@@ -118,6 +122,7 @@ namespace CMD.API.Controllers
         /// <response code="200">Successfully retrieved the list of doctors.</response>
         /// <response code="404">No doctors found.</response>
         /// <response code="400">Bad request if an error occurs.</response>
+        // [AllowAnonymous]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -149,6 +154,7 @@ namespace CMD.API.Controllers
         /// <returns>An <see cref="IActionResult"/> containing the details of the doctor.</returns>
         /// <response code="200">Successfully retrieved the doctor.</response>
         /// <response code="404">Doctor not found.</response>
+        // [Authorize]
         [HttpGet("{doctorId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]

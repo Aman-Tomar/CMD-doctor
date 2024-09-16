@@ -54,7 +54,7 @@ namespace CMD.Domain.Managers
             }
 
             // Check if doctor is available for the schedule
-            if (!await IsDoctorAvailableForScheduleAsync(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+            if (doctorScheduleDto.Status && !await IsDoctorAvailableForScheduleAsync(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
             {
                 throw new InvalidDoctorScheduleException(_messageService.GetMessage("InvalidDoctorScheduleException"));
             }
@@ -101,7 +101,7 @@ namespace CMD.Domain.Managers
             }
 
             // Check if doctor is available for the schedule
-            if (!await IsDoctorAvailableForScheduleAsync(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+            if (doctorScheduleDto.Status && !await IsDoctorAvailableForScheduleAsync(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
             {
                 throw new InvalidDoctorScheduleException(_messageService.GetMessage("InvalidDoctorScheduleException"));
             }

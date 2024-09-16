@@ -179,5 +179,59 @@ namespace CMD.Test
             // Act
             await _doctorManager.GetAllDoctorAsync(doctors, 1, invalidPageSize);
         }
+
+        /// <summary>
+        /// Verifies that the IsAddressMatchingClinicAsync method returns true when the address matches the clinic's address.
+        /// </summary>
+        [TestMethod]
+        public async Task IsAddressMatchingClinicAsync_MatchingAddress_ReturnsTrue()
+        {
+            // Arrange
+            int clinicId = 1;
+            string city = "New York";
+            string state = "NY";
+            string country = "USA";
+
+            var clinicAddress = new ClinicAddressDto
+            {
+                City = city,
+                State = state,
+                Country = country
+            };
+
+            _clinicRepositoryMock.Setup(repo => repo.GetClinicAddressAsync(clinicId))
+                                 .ReturnsAsync(clinicAddress);
+
+            // Act
+            var result = await _doctorManager.IsAddressMatchingClinicAsync(clinicId, city, state, country);
+
+            // Assert
+            Assert.IsTrue(result);
+            _clinicRepositoryMock.Verify(repo => repo.GetClinicAddressAsync(clinicId), Times.Once);
+        }
+
+        /// <summary>
+        /// Verifies that the IsAddressMatchingClinicAsync method returns false when the clinic is not found.
+        /// </summary>
+        [TestMethod]
+        public async Task IsAddressMatchingClinicAsync_ClinicNotFound_ReturnsFalse()
+        {
+            // Arrange
+            int clinicId = 1;
+            string city = "New York";
+            string state = "NY";
+            string country = "USA";
+
+            _clinicRepositoryMock.Setup(repo => repo.GetClinicAddressAsync(clinicId))
+                                 .ReturnsAsync((ClinicAddressDto)null);
+
+            // Act
+            var result = await _doctorManager.IsAddressMatchingClinicAsync(clinicId, city, state, country);
+
+            // Assert
+            Assert.IsFalse(result);
+            _clinicRepositoryMock.Verify(repo => repo.GetClinicAddressAsync(clinicId), Times.Once);
+        }
+
     }
 }

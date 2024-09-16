@@ -191,5 +191,121 @@ namespace CMD.Test
             // Assert
             Assert.IsNotNull(result);
         }
+        /// <summary>
+        /// Tests that the doctor is available when there are no overlapping schedules.
+        /// </summary>
+        [TestMethod]
+        public async Task IsDoctorAvailableForScheduleAsync_NoOverlap_ShouldReturnTrue()
+        {
+            // Arrange
+            int doctorId = 1;
+            Weekday weekday = Weekday.MONDAY;
+            string startTime = "09:00";
+            string endTime = "10:00";
+            var existingSchedules = new List<DoctorSchedule>();
+
+            _mockDoctorScheduleRepository.Setup(repo => repo.GetDoctorScheduleForWeekdayAsync(doctorId, weekday))
+                                         .ReturnsAsync(existingSchedules);
+
+            // Act
+            var result = await _doctorScheduleManager.IsDoctorAvailableForScheduleAsync(doctorId, weekday, startTime, endTime);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        /// <summary>
+        /// Tests that the doctor is not available when there is an overlapping schedule.
+        /// </summary>
+        [TestMethod]
+        public async Task IsDoctorAvailableForScheduleAsync_Overlap_ShouldReturnFalse()
+        {
+            // Arrange
+            int doctorId = 1;
+            Weekday weekday = Weekday.MONDAY;
+            string startTime = "09:00";
+            string endTime = "11:00";
+
+            var existingSchedules = new List<DoctorSchedule>
+            {
+                new DoctorSchedule
+                {
+                    StartTime = TimeOnly.Parse("08:00"),
+                    EndTime = TimeOnly.Parse("10:00")
+                }
+            };
+
+            _mockDoctorScheduleRepository.Setup(repo => repo.GetDoctorScheduleForWeekdayAsync(doctorId, weekday))
+                                         .ReturnsAsync(existingSchedules);
+
+            // Act
+            var result = await _doctorScheduleManager.IsDoctorAvailableForScheduleAsync(doctorId, weekday, startTime, endTime);
+
+            // Assert
+            Assert.IsFalse(result);
+        }
+
+        /// <summary>
+        /// Tests that the doctor is available when the new schedule starts after all existing schedules.
+        /// </summary>
+        [TestMethod]
+        public async Task IsDoctorAvailableForScheduleAsync_StartsAfterExistingSchedules_ShouldReturnTrue()
+        {
+            // Arrange
+            int doctorId = 1;
+            Weekday weekday = Weekday.MONDAY;
+            string startTime = "12:00";
+            string endTime = "13:00";
+
+            var existingSchedules = new List<DoctorSchedule>
+            {
+                new DoctorSchedule
+                {
+                    StartTime = TimeOnly.Parse("08:00"),
+                    EndTime = TimeOnly.Parse("11:00")
+                }
+            };
+
+            _mockDoctorScheduleRepository.Setup(repo => repo.GetDoctorScheduleForWeekdayAsync(doctorId, weekday))
+                                         .ReturnsAsync(existingSchedules);
+
+            // Act
+            var result = await _doctorScheduleManager.IsDoctorAvailableForScheduleAsync(doctorId, weekday, startTime, endTime);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
+        /// <summary>
+        /// Tests that the doctor is available when the new schedule ends before all existing schedules.
+        /// </summary>
+        [TestMethod]
+        public async Task IsDoctorAvailableForScheduleAsync_EndsBeforeExistingSchedules_ShouldReturnTrue()
+        {
+            // Arrange
+            int doctorId = 1;
+            Weekday weekday = Weekday.MONDAY;
+            string startTime = "07:00";
+            string endTime = "08:00";
+
+            var existingSchedules = new List<DoctorSchedule>
+            {
+                new DoctorSchedule
+                {
+                    StartTime = TimeOnly.Parse("08:00"),
+                    EndTime = TimeOnly.Parse("10:00")
+                }
+            };
+
+            _mockDoctorScheduleRepository.Setup(repo => repo.GetDoctorScheduleForWeekdayAsync(doctorId, weekday))
+                                         .ReturnsAsync(existingSchedules);
+
+            // Act
+            var result = await _doctorScheduleManager.IsDoctorAvailableForScheduleAsync(doctorId, weekday, startTime, endTime);
+
+            // Assert
+            Assert.IsTrue(result);
+        }
+
     }
 }

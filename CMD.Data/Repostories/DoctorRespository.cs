@@ -50,7 +50,6 @@ namespace CMD.Data.Repostories
         {
             return await _context.Doctors
                         .Include(d => d.DoctorAddress)
-                        .Where(d => d.Status == true)
                         .ToListAsync();
         }
 

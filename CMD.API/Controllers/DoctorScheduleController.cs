@@ -3,6 +3,7 @@ using CMD.Domain.Entities;
 using CMD.Domain.Managers;
 using CMD.Domain.Repositories;
 using CMD.Domain.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NLog;
@@ -12,6 +13,7 @@ namespace CMD.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize(Roles = "Admin")]
     public class DoctorScheduleController : ControllerBase
     {
         private static readonly Logger _logger = LogManager.GetCurrentClassLogger();
@@ -44,6 +46,7 @@ namespace CMD.API.Controllers
         /// <returns>A 201 Created status code if the schedule is successfully created; a 400 Bad Request status code if the input data is invalid or an exception occurs during processing.</returns>
         /// <response code="201">Returned when the doctor schedule is successfully created.</response>
         /// <response code="400">Returned when the input data is invalid or when an error occurs during processing.</response>
+        // [Authorize(Roles = "Doctor, Admin")]
         [HttpPost]
         [Consumes("application/json")]
         [ProducesResponseType(StatusCodes.Status201Created)]
@@ -86,6 +89,7 @@ namespace CMD.API.Controllers
         /// <response code="200">Returned when the doctor schedule is successfully updated.</response>
         /// <response code="400">Returned when the input data is invalid or when an error occurs during processing.</response>
         /// <response code="404">Returned when the doctor schedule with the specified ID or the doctor with the specified ID is not found.</response>
+        // [Authorize(Roles = "Doctor, Admin")]
         [HttpPut]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -134,6 +138,7 @@ namespace CMD.API.Controllers
         /// <returns>A 200 OK status code with the doctor's schedule if found; a 404 Not Found status code if the doctor does not exist or if no schedule is available for the doctor.</returns>
         /// <response code="200">Returned when the doctor's schedule is successfully retrieved.</response>
         /// <response code="404">Returned when the doctor with the specified ID is not found or if no schedule is available for the doctor.</response>
+        // [Authorize]
         [HttpGet]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -174,6 +179,7 @@ namespace CMD.API.Controllers
         /// <returns>A 200 OK status code with the doctor schedule if found; a 404 Not Found status code if the doctor schedule does not exist.</returns>
         /// <response code="200">Returned when the doctor schedule is successfully retrieved.</response>
         /// <response code="404">Returned when the doctor schedule with the specified ID is not found.</response>
+        // [Authorize]
         [HttpGet("{doctorScheduleId:int}")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -205,6 +211,7 @@ namespace CMD.API.Controllers
         /// <returns>A 200 OK status code with all doctor schedules if found; a 404 Not Found status code if no schedules are available.</returns>
         /// <response code="200">Returned when the doctor schedules are successfully retrieved.</response>
         /// <response code="404">Returned when no doctor schedules are found.</response>
+        // [Authorize]
         [HttpGet("all")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -239,6 +246,7 @@ namespace CMD.API.Controllers
         /// <returns>A 200 OK status code with a boolean indicating if the doctor has a schedule for that date; a 404 Not Found status code if the doctor does not exist.</returns>
         /// <response code="200">Returned when the schedule is found for the specified date.</response>
         /// <response code="404">Returned when the doctor with the specified ID is not found.</response>
+        // [Authorize]
         [HttpGet("available")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
