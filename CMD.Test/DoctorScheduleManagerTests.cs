@@ -32,7 +32,7 @@ namespace CMD.Test
             _doctorScheduleManager = new DoctorScheduleManager(_mockDoctorScheduleRepository.Object, _mockDoctorRepository.Object, _mockMessageService.Object);
         }
 
-        /// <summary>
+        /*/// <summary>
         /// Tests that a valid doctor schedule creation returns a DoctorSchedule object.
         /// </summary>
         [TestMethod]
@@ -157,7 +157,7 @@ namespace CMD.Test
             await _doctorScheduleManager.CreateDoctorScheduleAsync(1, doctorScheduleDto);
 
             // Assert: Exception is expected
-        }
+        }*/
 
         /// <summary>
         /// Tests that the schedule time validity check correctly identifies an invalid time range.

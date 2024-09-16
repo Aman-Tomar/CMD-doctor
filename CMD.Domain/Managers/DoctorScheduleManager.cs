@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using CMD.Domain.DTO;
 using CMD.Domain.Entities;
@@ -8,6 +9,7 @@ using CMD.Domain.Enums;
 using CMD.Domain.Exceptions;
 using CMD.Domain.Repositories;
 using CMD.Domain.Services;
+using Microsoft.Identity.Client;
 
 namespace CMD.Domain.Managers
 {
@@ -47,18 +49,21 @@ namespace CMD.Domain.Managers
                 throw new InvalidWeekdayException(_messageService.GetMessage("InvalidWeekdayException"));
             }
 
-            // Validate schedule time
-            if (await IsScheduleTimeValidAsync(doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+            // Validate schedule time if the status is active
+            if (doctorScheduleDto.Status)
             {
-                throw new InvalidTimeException(_messageService.GetMessage("InvalidTimeException"));
-            }
+                // If active, check if the time slot is valid
+                if (!await IsScheduleTimeValidAsync(doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+                {
+                    throw new InvalidTimeException(_messageService.GetMessage("InvalidTimeException"));
+                }
 
-            // Check if doctor is available for the schedule
-            if (doctorScheduleDto.Status && !await IsDoctorAvailableForScheduleAsync(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
-            {
-                throw new InvalidDoctorScheduleException(_messageService.GetMessage("InvalidDoctorScheduleException"));
+                // Check if doctor is available for the schedule
+                if (!await IsDoctorAvailableForScheduleAsync(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+                {
+                    throw new InvalidDoctorScheduleException(_messageService.GetMessage("InvalidDoctorScheduleException"));
+                }
             }
-
 
             // Map DTO to entity and save to the database
             var doctorSchedule = new DoctorSchedule
@@ -70,14 +75,15 @@ namespace CMD.Domain.Managers
                 Status = doctorScheduleDto.Status,
                 DoctorId = doctorId,
                 CreatedDate = DateTime.Now,
-                CreatedBy = "admin",
+                CreatedBy = "Admin",
                 LastModifiedDate = DateTime.Now,
-                LastModifiedBy = "admin"
+                LastModifiedBy = "Admin"
             };
 
             await _doctorScheduleRepository.CreateDoctorScheduleAsync(doctorSchedule);
             return doctorSchedule;
         }
+
 
         /// <summary>
         /// Edits an existing doctor schedule.
@@ -94,18 +100,21 @@ namespace CMD.Domain.Managers
                 throw new InvalidWeekdayException(_messageService.GetMessage("InvalidWeekdayException"));
             }
 
-            // Validate schedule time
-            if (await IsScheduleTimeValidAsync(doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+            // Validate schedule time if the status is active
+            if (doctorScheduleDto.Status)
             {
-                throw new InvalidTimeException(_messageService.GetMessage("InvalidTimeException"));
-            }
+                // If active, check if the time slot is valid
+                if (!await IsScheduleTimeValidAsync(doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+                {
+                    throw new InvalidTimeException(_messageService.GetMessage("InvalidTimeException"));
+                }
 
-            // Check if doctor is available for the schedule
-            if (doctorScheduleDto.Status && !await IsDoctorAvailableForScheduleAsync(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
-            {
-                throw new InvalidDoctorScheduleException(_messageService.GetMessage("InvalidDoctorScheduleException"));
+                // Check if doctor is available for the schedule
+                if (!await IsDoctorAvailableForScheduleAsync(doctorScheduleDto.DoctorId, weekday, doctorScheduleDto.StartTime, doctorScheduleDto.EndTime))
+                {
+                    throw new InvalidDoctorScheduleException(_messageService.GetMessage("InvalidDoctorScheduleException"));
+                }
             }
-
 
             // Update the schedule entity
             doctorSchedule.ClinicId = doctorScheduleDto.ClinicId;

@@ -74,5 +74,17 @@ namespace CMD.Data.Repostories
             _context.Doctors.Add(doctor);
             await _context.SaveChangesAsync();
         }
+
+        /// <summary>
+        /// Retrieves a list of doctors by the department ID.
+        /// </summary>
+        /// <param name="departmentId">The unique identifier of the department.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of <see cref="Doctor"/> entities belonging to the specified department.</returns>
+        public async Task<List<Doctor>> GetDoctorsByDepartmentIdAsync(int departmentId)
+        {
+            return await _context.Doctors
+                                 .Where(d => d.DepartmentId == departmentId)
+                                 .ToListAsync();
+        }
     }
 }

@@ -43,5 +43,7 @@ namespace CMD.Domain.Repositories
         /// <param name="doctor">The <see cref="Doctor"/> entity to be added.</param>
         /// <returns>A task that represents the asynchronous operation.</returns>
         Task AddDoctorAsync(Doctor doctor);
+
+        Task<List<Doctor>> GetDoctorsByDepartmentIdAsync(int departmentId);
     }
 }

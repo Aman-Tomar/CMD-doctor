@@ -170,5 +170,35 @@ namespace CMD.API.Controllers
             _logger.Info($"Doctor retrieved successfully. ID: {doctorId}");
             return Ok(doctor);
         }
+
+        /// <summary>
+        /// Retrieves doctors based on their department ID.
+        /// </summary>
+        /// <param name="departmentId">The ID of the department to retrieve doctors for.</param>
+        /// <returns>
+        /// An <see cref="IActionResult"/> containing the list of doctors in the specified department,
+        /// or a <see cref="NotFound"/> result if no doctors are found for the given department ID.
+        /// </returns>
+        /// <response code="200">Successfully retrieved the doctors.</response>
+        /// <response code="404">No doctors found for the department.</response>
+        /// <remarks>
+        /// This method retrieves all doctors associated with a specific department ID. 
+        /// If no doctors are found for the department, a 404 response will be returned.
+        /// </remarks>
+        [HttpGet("Department")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetDoctorByDepartmentId([FromQuery] int departmentId)
+        {
+            var doctors = await _doctorRepository.GetDoctorsByDepartmentIdAsync(departmentId);
+            if (doctors == null)
+            {
+                _logger.Warn($"No doctor found for department. ID: {departmentId}");
+                return NotFound(_messageService.GetMessage("DoctorNotFound"));
+            }
+
+            _logger.Info($"Doctors retrieved successfully for department. ID: {departmentId}");
+            return Ok(doctors);
+        }
     }
 }
